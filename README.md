@@ -3,6 +3,8 @@ Computer vision project for FIRST Robotics Team #5414 Pearadox.
 
 ## Parts List
 
+Available on Amazon.
+
 ### Element14 Raspberry Pi 3 B+ Motherboard
 $36.98  
 ![Raspberry Pi 3 B+](raspberry_pi_3_B+.png)
@@ -20,7 +22,7 @@ $7.49
 
 ### Miuzei Raspberry Pi 3 B+ Case with Fan Cooling and 3× Heat-Sinks, 5V 2.5A Power Supply with On/Off Switch Cable for RPi 3 B+, 3B, 2b
 $15.99  
-![Raspberry Pi Case Kit](rasberry_pi_case_kit.png)
+![Raspberry Pi Case Kit](raspberry_pi_case_kit.png)
 - Case has the layout for the Raspberry pi 3 model b+
 - Made of acrylic so won’t block Pi’s Wifi / Bluetooth signal
 - Plugs on the case to connect GPIO, HDMI, USB, SD, power, etc
@@ -30,8 +32,8 @@ $15.99
 ### MakerFocus Raspberry Pi Camera Night Vision Camera Adjustable-Focus Module 5MP OV5647 Webcam Video 1080p and 15CM 50CM FFC Adapter Cables and Camera Mount
 $23.99  
 ![Night Vision Camera](night_vision_camera.png)
-- The camera supports night vision and has manual focus
 - Kit includes camera, two fill lights, FFC adapters (15cm and 50cm), and camera mount (acrylic)
+- Camera supports night vision and has manual focus
 - Camera provides 3.3V power output
 
 Note
