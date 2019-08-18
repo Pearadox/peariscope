@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Captures video from a webcam and sends it to the FRC dashboard after processing."""
+"""Captures video from a webcam and sends it and a processed stream to the FRC dashboard."""
 
 from cscore import CameraServer
 from networktables import NetworkTables
@@ -42,4 +42,3 @@ while True:
 
     # Give the output stream a new image to display
     outputStream.putFrame(img)
-

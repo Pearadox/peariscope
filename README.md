@@ -26,3 +26,12 @@ The initial boot may take as long as a minute, but later boots will be much fast
 3. Connect the Pi ethernet to a LAN.  
 Open a web browser and connect to http://frcvision.local/ if the Pi is plugged into the robot radio, or use the IP address of the Pi if it is not.  
 Note the image boots up read-only by default, so it's necessary to click the "writable" button to make changes.  
+
+## Peariscope Software
+
+The Peariscope software is based on the [example](https://github.com/wpilibsuite/FRCVision-pi-gen/releases/download/v2019.3.1/example-python-2019.3.1.zip)
+that performs simple streaming of multiple cameras as well as camera switching.
+The software also holds a custom computer vision algorithm that can be modified.
+
+Further documentation can be seen here:
+[Peariscope Software](src/README.md)
