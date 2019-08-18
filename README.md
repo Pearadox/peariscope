@@ -1,10 +1,10 @@
 # Peariscope
 
-Computer vision project for FIRST Robotics Team #5414 [Pearadox](http://https://pearadox5414.weebly.com/).
+Peariscope is a computer vision project for FIRST Robotics Team #5414 [Pearadox](http://https://pearadox5414.weebly.com/) that implements robot _pearception_ to assist with robot navigation and manipulation.
 
 ## Peariscope Hardware
 
-The Peariscope hardware consists of a Raspberry Pi with a MicroSD memory card, a night vision camera with infrared LEDs, a power supply, and an optional case.  Example hardware can be seen here:
+The Peariscope hardware consists of a Raspberry Pi with a MicroSD memory card, a night vision camera with a _pear_ of infrared LEDs, a power supply, and an optional case.  Example hardware can be seen here:
 [Peariscope Hardware](hardware/README.md)
 
 ## Peariscope OS
@@ -47,4 +47,3 @@ from the
 `basic_camera_demo.py` is an example that captures video from a webcam and sends it to the FRC dashboard, as well as processing the video (by adding a red rectangle) and publishing the processed video as a second stream.
 
 `peariscope.py` is the complete demonstration software that can be modified for future computer vision needs.
-
