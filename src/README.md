@@ -10,3 +10,6 @@ from the
 `trivial_camera_demo.py` is a simple example that captures video from a webcam and sends it to the FRC dashboard without any image processing.
 
 `basic_camera_demo.py` is an example that captures video from a webcam and sends it to the FRC dashboard, as well as processing the video (by adding a red rectangle) and publishing the processed video as a second stream.
+
+`peariscope.py` is the complete demonstration software that can be modified for future computer vision needs.
+
