@@ -212,14 +212,6 @@ def startSwitchedCamera(config):
 
     return server
 
-def peariscope_setup():
-    """Runs once"""
-    pass
-
-def peariscope_loop():
-    """Runs over and over again"""
-    pass
-
 if __name__ == "__main__":
     if len(sys.argv) >= 2:
         configFile = sys.argv[1]
@@ -257,6 +249,9 @@ if __name__ == "__main__":
     camera = cameras[0]
     cs = insts[0]
 
+    print("Info", camera.getInfo())
+    print("Path", camera.getPath())
+
     #camera.setResolution(640, 480)
     #cs.enableLogging()
 
@@ -264,7 +259,7 @@ if __name__ == "__main__":
     cvSink = cs.getVideo()
 
     # Send images back to the Dashboard
-    outputStream = cs.putVideo("Peariscope", 640, 480)
+    outputStream = cs.putVideo("Peariscope", 320, 240)
 
     # Preallocate space for new images
     image = np.zeros(shape=(240, 320, 3), dtype=np.uint8)
@@ -292,45 +287,45 @@ if __name__ == "__main__":
         sd.putNumber("height", height)
         sd.putNumber("width", width)
 
-        if True:
+        # Convert the image to grayscale
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-            # Convert the image to grayscale
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # Smooth (blur) the image to reduce high frequency noise
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-            # Smooth (blur) the image to reduce high frequency noise
-            blurred = cv2.GaussianBlur(gray, (11, 11), 0)
+        (minVal, max_val, minLoc, maxLoc) = cv2.minMaxLoc(blurred)
+        sd.putNumber("max_val", max_val)
 
-            # Threshold the image to reveal the brightest regions in the blurred image
-            thresh = cv2.threshold(blurred, 225, 255, cv2.THRESH_BINARY)[1]
+        # Threshold the image to reveal the brightest regions in the blurred image
+        thresh = cv2.threshold(blurred, 225, 255, cv2.THRESH_BINARY)[1]
 
-            # Remove any small blobs of noise using a series of erosions and dilations
-            thresh = cv2.erode(thresh, None, iterations=2)
-            thresh = cv2.dilate(thresh, None, iterations=4)
+        # Remove any small blobs of noise using a series of erosions and dilations
+        thresh = cv2.erode(thresh, None, iterations=2)
+        thresh = cv2.dilate(thresh, None, iterations=2)
 
-            # Perform a connected component analysis on the thresholded image
-            connectivity = 8 # Choose 4 or 8 for connectivity type
-            num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
-                thresh, connectivity, cv2.CV_32S)
+        # Perform a connected component analysis on the thresholded image
+        connectivity = 4 # Choose 4 or 8 for connectivity type
+        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
+            thresh, connectivity, cv2.CV_32S)
 
-            for i in range(num_labels):
-                # Ignore this label if it is the background
-                if i == 0:
-                    continue
-                x, y = centroids[i]
-                left   = stats[i, cv2.CC_STAT_LEFT]
-                top    = stats[i, cv2.CC_STAT_TOP]
-                width  = stats[i, cv2.CC_STAT_WIDTH]
-                height = stats[i, cv2.CC_STAT_HEIGHT]
-                area   = stats[i, cv2.CC_STAT_AREA]
-                bottom = top + height
-                right = left + width
+        for i in range(num_labels):
+            # Ignore this label if it is the background
+            if i == 0:
+                continue
+            x, y = centroids[i]
+            left   = stats[i, cv2.CC_STAT_LEFT]
+            top    = stats[i, cv2.CC_STAT_TOP]
+            width  = stats[i, cv2.CC_STAT_WIDTH]
+            height = stats[i, cv2.CC_STAT_HEIGHT]
+            area   = stats[i, cv2.CC_STAT_AREA]
+            bottom = top + height
+            right = left + width
 
-                RED = (0, 0, 255)
-                cv2.rectangle(image, (left, top), (right, bottom), RED, 3)
+            RED = (0, 0, 255)
+            cv2.rectangle(image, (left, top), (right, bottom), RED, 3)
 
-
-            # Give the output stream a new image to display
-            outputStream.putFrame(image)
+        # Give the output stream a new image to display
+        outputStream.putFrame(image)
 
         current_time = time.time()
         elapsed_time = current_time - start_time
