@@ -252,17 +252,20 @@ if __name__ == "__main__":
     print("Info", camera.getInfo())
     print("Path", camera.getPath())
 
-    #camera.setResolution(640, 480)
-    #cs.enableLogging()
+    config = json.loads(camera.getConfigJson())
+    height = config["height"]
+    width = config["width"]
+    fps = config["fps"]
+    print("height {} width {} fps {}".format(height, width, fps))
 
     # Capture images from the camera
     cvSink = cs.getVideo()
 
     # Send images back to the Dashboard
-    outputStream = cs.putVideo("Peariscope", 320, 240)
+    outputStream = cs.putVideo("Peariscope", width, height)
 
     # Preallocate space for new images
-    image = np.zeros(shape=(240, 320, 3), dtype=np.uint8)
+    image = np.zeros(shape=(height, width, 3), dtype=np.uint8)
 
     # Use network table to publish camera data
     sd = NetworkTables.getTable("Peariscope")
@@ -283,9 +286,9 @@ if __name__ == "__main__":
         # Peariscope Loop Code
         #
 
-        height, width = image.shape[:2]
-        sd.putNumber("height", height)
-        sd.putNumber("width", width)
+        image_height, image_width = image.shape[:2]
+        sd.putNumber("image_height", image_height)
+        sd.putNumber("image_width", image_width)
 
         # Convert the image to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -293,7 +296,8 @@ if __name__ == "__main__":
         # Smooth (blur) the image to reduce high frequency noise
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-        (minVal, max_val, minLoc, maxLoc) = cv2.minMaxLoc(blurred)
+        (min_val, max_val, min_loc, max_loc) = cv2.minMaxLoc(blurred)
+        sd.putNumber("min_val", min_val)
         sd.putNumber("max_val", max_val)
 
         # Threshold the image to reveal the brightest regions in the blurred image
@@ -301,28 +305,32 @@ if __name__ == "__main__":
 
         # Remove any small blobs of noise using a series of erosions and dilations
         thresh = cv2.erode(thresh, None, iterations=2)
-        thresh = cv2.dilate(thresh, None, iterations=2)
+        thresh = cv2.dilate(thresh, None, iterations=4)
 
         # Perform a connected component analysis on the thresholded image
         connectivity = 4 # Choose 4 or 8 for connectivity type
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
             thresh, connectivity, cv2.CV_32S)
 
+        RED = (0, 0, 255)
+        GREEN = (0, 255, 0)
+
         for i in range(num_labels):
             # Ignore this label if it is the background
             if i == 0:
                 continue
-            x, y = centroids[i]
-            left   = stats[i, cv2.CC_STAT_LEFT]
-            top    = stats[i, cv2.CC_STAT_TOP]
-            width  = stats[i, cv2.CC_STAT_WIDTH]
-            height = stats[i, cv2.CC_STAT_HEIGHT]
-            area   = stats[i, cv2.CC_STAT_AREA]
-            bottom = top + height
-            right = left + width
 
-            RED = (0, 0, 255)
-            cv2.rectangle(image, (left, top), (right, bottom), RED, 3)
+            centroid_x, centroid_y = centroids[i]
+            cv2.circle(image, (int(centroid_x), int(centroid_y)), 2, RED, -1)
+
+            blob_area  = stats[i, cv2.CC_STAT_AREA]
+            box_left   = stats[i, cv2.CC_STAT_LEFT]
+            box_top    = stats[i, cv2.CC_STAT_TOP]
+            box_width  = stats[i, cv2.CC_STAT_WIDTH]
+            box_height = stats[i, cv2.CC_STAT_HEIGHT]
+            box_bottom = box_top + box_height
+            box_right  = box_left + box_width
+            cv2.rectangle(image, (box_left, box_top), (box_right, box_bottom), RED, 1)
 
         # Give the output stream a new image to display
         outputStream.putFrame(image)
