@@ -321,7 +321,7 @@ if __name__ == "__main__":
                 continue
 
             centroid_x, centroid_y = centroids[i]
-            cv2.circle(image, (int(centroid_x), int(centroid_y)), 2, RED, -1)
+            cv2.circle(image, (int(centroid_x), int(centroid_y)), 3, RED, -1)
 
             blob_area  = stats[i, cv2.CC_STAT_AREA]
             box_left   = stats[i, cv2.CC_STAT_LEFT]
@@ -330,7 +330,7 @@ if __name__ == "__main__":
             box_height = stats[i, cv2.CC_STAT_HEIGHT]
             box_bottom = box_top + box_height
             box_right  = box_left + box_width
-            cv2.rectangle(image, (box_left, box_top), (box_right, box_bottom), RED, 1)
+            cv2.rectangle(image, (box_left, box_top), (box_right, box_bottom), RED, 3)
 
         # Give the output stream a new image to display
         outputStream.putFrame(image)
