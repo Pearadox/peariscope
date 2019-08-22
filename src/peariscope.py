@@ -283,7 +283,7 @@ if __name__ == "__main__":
             continue
 
         #
-        # Peariscope Loop Code
+        # Peariscope Loop Code (process the image)
         #
 
         image_height, image_width = image.shape[:2]
