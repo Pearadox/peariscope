@@ -287,8 +287,7 @@ if __name__ == "__main__":
         #
 
         image_height, image_width = image.shape[:2]
-        sd.putNumber("image_height", image_height)
-        sd.putNumber("image_width", image_width)
+        sd.putNumberArray("image_size", [image_height, image_width])
 
         # Convert the image to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -297,8 +296,7 @@ if __name__ == "__main__":
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
         (min_val, max_val, min_loc, max_loc) = cv2.minMaxLoc(blurred)
-        sd.putNumber("min_val", min_val)
-        sd.putNumber("max_val", max_val)
+        sd.putNumberArray("min_max_val", [min_val, max_val])
 
         # Threshold the image to reveal the brightest regions in the blurred image
         thresh = cv2.threshold(blurred, 225, 255, cv2.THRESH_BINARY)[1]
@@ -315,6 +313,8 @@ if __name__ == "__main__":
         RED = (0, 0, 255)
         GREEN = (0, 255, 0)
 
+        x_list = []
+        y_list = []
         for i in range(num_labels):
             # Ignore this label if it is the background
             if i == 0:
@@ -322,6 +322,9 @@ if __name__ == "__main__":
 
             centroid_x, centroid_y = centroids[i]
             cv2.circle(image, (int(centroid_x), int(centroid_y)), 3, RED, -1)
+
+            x_list.append(centroid_x)
+            y_list.append(centroid_y)
 
             blob_area  = stats[i, cv2.CC_STAT_AREA]
             box_left   = stats[i, cv2.CC_STAT_LEFT]
@@ -334,6 +337,9 @@ if __name__ == "__main__":
 
         # Give the output stream a new image to display
         outputStream.putFrame(image)
+
+        sd.putNumberArray("x_list", x_list)
+        sd.putNumberArray("y_list", y_list)
 
         current_time = time.time()
         elapsed_time = current_time - start_time
