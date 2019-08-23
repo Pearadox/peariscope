@@ -24,8 +24,18 @@ The MicroSD card needs to be at least 4 GB.
 2. Put the MicroSD card in the Pi and apply power.  
 The initial boot may take as long as a minute, but later boots will be much faster (20 seconds or less).  
 3. Connect the Pi ethernet to a LAN.  
-Open a web browser and connect to http://frcvision.local/ if the Pi is plugged into the robot radio, or use the IP address of the Pi if it is not.  
-Note the image boots up read-only by default, so it's necessary to click the "writable" button to make changes.  
+
+### Connecting to the Pi
+
+If the Pi is plugged into the robot radio, we can connect to http://frcvision.local/ using a web browser.  
+Otherwise, we can connect to the IP address of the Pi.  
+Note the Pi boots up read-only by default, so it's necessary to click the "writable" button to make changes.  
+
+We can also use [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html) to login to the pi via SSH.  
+- The login id is: *pi*
+- The password is: *raspberry*
+- The Pi boots up read-only by default, so it's necessary to use the `rw` command to be able to make changes.
+- The 'ro' command sets the Pi back to read-only mode, to protect its memory card from damage during power loss.
 
 ## Peariscope Software
 
