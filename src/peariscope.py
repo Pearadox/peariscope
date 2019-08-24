@@ -315,6 +315,7 @@ if __name__ == "__main__":
         BLU = (255, 0, 0)
         YEL = (0, 255, 255)
 
+        # Examine each blob
         x_list = []
         y_list = []
         for i in range(num_labels):
@@ -350,11 +351,26 @@ if __name__ == "__main__":
             cv2.rectangle(image, (box_left, box_top), (box_right, box_bottom),
                           RED, line_thickness)
 
+        # Draw crosshairs on the image
+        image_center_x = int(image_width/2)
+        image_center_y = int(image_height/2)
+        cv2.line(image, (image_center_x, 0), (image_center_x, image_height-1), YEL, 1)
+        cv2.line(image, (0, image_center_y), (image_width-1, image_center_y), YEL, 1)
+
         # Give the output stream a new image to display
         outputStream.putFrame(image)
 
+        # Output the lists of x and y coordinates for the blobs
         sd.putNumberArray("x_list", x_list)
         sd.putNumberArray("y_list", y_list)
+
+        # Compute the coordinates as percentage distances from image center
+        # for x (horizontal), 0 is center,  -100 is image left, 100 is image right
+        # for y (vertical), 0 is center, -100 is image top, 100 is image bottom
+        x_list_pct = [(x-image_width/2)/(image_width/2)*100 for x in x_list]
+        y_list_pct = [(y-image_height/2)/(image_height/2)*100 for y in y_list]
+        sd.putNumberArray("x_list_pct", x_list_pct)
+        sd.putNumberArray("y_list_pct", y_list_pct)
 
         current_time = time.time()
         elapsed_time = current_time - start_time
