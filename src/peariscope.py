@@ -290,25 +290,25 @@ if __name__ == "__main__":
         sd.putNumberArray("image_size", [image_height, image_width])
 
         # Convert the image to grayscale
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         # Smooth (blur) the image to reduce high frequency noise
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        blur_img = cv2.GaussianBlur(gray_img, (5, 5), 0)
 
-        (min_val, max_val, min_loc, max_loc) = cv2.minMaxLoc(blurred)
+        (min_val, max_val, min_loc, max_loc) = cv2.minMaxLoc(blur_img)
         sd.putNumberArray("min_max_val", [min_val, max_val])
 
         # Threshold the image to reveal the brightest regions in the blurred image
-        thresh = cv2.threshold(blurred, 225, 255, cv2.THRESH_BINARY)[1]
+        thresh_img = cv2.threshold(blur_img, 200, 255, cv2.THRESH_BINARY)[1]
 
         # Remove any small blobs of noise using a series of erosions and dilations
-        thresh = cv2.erode(thresh, None, iterations=2)
-        thresh = cv2.dilate(thresh, None, iterations=4)
+        blob_img = cv2.erode(thresh_img, None, iterations=2)
+        blob_img = cv2.dilate(blob_img, None, iterations=4)
 
         # Perform a connected component analysis on the thresholded image
         connectivity = 4 # Choose 4 or 8 for connectivity type
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
-            thresh, connectivity, cv2.CV_32S)
+            blob_img, connectivity, cv2.CV_32S)
 
         RED = (0, 0, 255)
         GRN = (0, 255, 0)
