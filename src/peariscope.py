@@ -311,7 +311,9 @@ if __name__ == "__main__":
             thresh, connectivity, cv2.CV_32S)
 
         RED = (0, 0, 255)
-        GREEN = (0, 255, 0)
+        GRN = (0, 255, 0)
+        BLU = (255, 0, 0)
+        YEL = (0, 255, 255)
 
         x_list = []
         y_list = []
@@ -320,12 +322,7 @@ if __name__ == "__main__":
             if i == 0:
                 continue
 
-            centroid_x, centroid_y = centroids[i]
-            cv2.circle(image, (int(centroid_x), int(centroid_y)), 3, RED, -1)
-
-            x_list.append(centroid_x)
-            y_list.append(centroid_y)
-
+            # Get features of the blob
             blob_area  = stats[i, cv2.CC_STAT_AREA]
             box_left   = stats[i, cv2.CC_STAT_LEFT]
             box_top    = stats[i, cv2.CC_STAT_TOP]
@@ -333,7 +330,21 @@ if __name__ == "__main__":
             box_height = stats[i, cv2.CC_STAT_HEIGHT]
             box_bottom = box_top + box_height
             box_right  = box_left + box_width
-            cv2.rectangle(image, (box_left, box_top), (box_right, box_bottom), RED, 3)
+            centroid_x, centroid_y = centroids[i]
+
+            # Add the centroid to the list of detections
+            x_list.append(centroid_x)
+            y_list.append(centroid_y)
+
+            # Draw a circle to mark the centroid of the reflector blob
+            center = (int(centroid_x), int(centroid_y)) # Center of the circle
+            radius = 2
+            cv2.circle(image, center, radius, RED, -1)
+
+            # Draw a rectangle to mark the bounding box of the reflector blob
+            line_thickness = 2
+            cv2.rectangle(image, (box_left, box_top), (box_right, box_bottom),
+                          RED, line_thickness)
 
         # Give the output stream a new image to display
         outputStream.putFrame(image)
