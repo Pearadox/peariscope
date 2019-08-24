@@ -332,6 +332,10 @@ if __name__ == "__main__":
             box_right  = box_left + box_width
             centroid_x, centroid_y = centroids[i]
 
+            # Ignore blobs that are too big
+            if box_height > image_height/2 or box_width > image_width/2:
+                continue
+
             # Add the centroid to the list of detections
             x_list.append(centroid_x)
             y_list.append(centroid_y)
