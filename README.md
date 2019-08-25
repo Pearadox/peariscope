@@ -27,8 +27,8 @@ The initial boot may take as long as a minute, but later boots will be much fast
 
 ## Connecting to the Pi
 
-If the Pi is plugged into the robot radio, we can connect to http://frcvision.local/ using a web browser.  
-Otherwise, we can connect to the IP address of the Pi.  
+If the Pi is plugged into the robot radio, we can connect to http://frcvision.local/ using a web browser.
+Otherwise, we can connect to the IP address of the Pi.
 Note the Pi boots up read-only by default, so it's necessary to click the "writable" button to make changes.  
 
 We can also use [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html) to login to the pi via SSH.  
