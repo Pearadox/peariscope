@@ -55,7 +55,8 @@ def peariscope(camera, inst):
 
 def process_image(image, nt, output_stream):
     image_height, image_width = image.shape[:2]
-    nt.putNumberArray("image_size", [image_height, image_width])
+    nt.putNumber("image_height", image_height)
+    nt.putNumber("image_width", image_width)
 
     # Convert the image to grayscale
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -65,7 +66,8 @@ def process_image(image, nt, output_stream):
 
     # Compute the minimum and maximum pixel values [0, 255]
     (min_val, max_val, _, _) = cv2.minMaxLoc(blur_img)
-    nt.putNumberArray("min_max_val", [min_val, max_val])
+    nt.putNumber("min_val", min_val)
+    nt.putNumber("max_val", max_val)
 
     # Threshold the image to reveal the brightest regions in the blurred image
     binary_image = cv2.threshold(blur_img, 200, 255, cv2.THRESH_BINARY)[1]
@@ -84,8 +86,7 @@ def process_image(image, nt, output_stream):
     y_list = []
     for i in range(num_labels):
         # Ignore this label if it is the background
-        if i == 0:
-            continue
+        if i == 0: continue
 
         # Get features of the blob
         blob_area  = stats[i, cv2.CC_STAT_AREA]
@@ -98,13 +99,12 @@ def process_image(image, nt, output_stream):
         centroid_x, centroid_y = centroids[i]
 
         # Ignore blobs that are too big
+        color = RED
         if box_height < image_height/2 and box_width < image_width/2:
             color = GREEN
             # Add the centroid to the list of detections
             x_list.append(centroid_x)
             y_list.append(centroid_y)
-        else:
-            color = RED
 
         # Draw a circle to mark the centroid of the reflector blob
         center = (int(centroid_x), int(centroid_y)) # Center of the circle
