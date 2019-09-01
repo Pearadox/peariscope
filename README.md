@@ -56,7 +56,7 @@ from the
 
 `basic_camera_demo.py` is an example that captures video from a webcam and sends it to the FRC dashboard, as well as processing the video (by adding a red rectangle) and publishing the processed video as a second stream.
 
-`peariscope.py` is the complete demonstration software that can be modified for future computer vision needs.
+`pearistart.py` is based on `multiCameraServer.py` and starts up `peariscope.py` which is the complete demonstration software that can be modified for future computer vision needs.
 
 ## Illumination
 
