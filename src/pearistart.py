@@ -14,6 +14,8 @@ from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
 from networktables import NetworkTablesInstance
 import ntcore
 
+import peariscope
+
 #   JSON format:
 #   {
 #       "team": <team number>,
@@ -64,6 +66,7 @@ server = False
 cameraConfigs = []
 switchedCameraConfigs = []
 cameras = []
+insts = []
 
 def parseError(str):
     """Report parse error."""
@@ -182,7 +185,7 @@ def startCamera(config):
     if config.streamConfig is not None:
         server.setConfigJson(json.dumps(config.streamConfig))
 
-    return camera
+    return camera, inst
 
 def startSwitchedCamera(config):
     """Start running the switched camera."""
@@ -227,12 +230,14 @@ if __name__ == "__main__":
 
     # start cameras
     for config in cameraConfigs:
-        cameras.append(startCamera(config))
+        camera, inst = startCamera(config)
+        cameras.append(camera)
+        insts.append(inst)
 
     # start switched cameras
     for config in switchedCameraConfigs:
         startSwitchedCamera(config)
 
-    # loop forever
-    while True:
-        time.sleep(10)
+    # Peariscope uses only the first (non-switched) camera and its instance
+    peariscope.peariscope(cameras[0], insts[0])
+
