@@ -60,17 +60,17 @@ class PeariscopeGrip:
         self.find_contours_output = None
 
         self.__filter_contours_contours = self.find_contours_output
-        self.__filter_contours_min_area = 0
-        self.__filter_contours_min_perimeter = 0
+        self.__filter_contours_min_area = 0.0
+        self.__filter_contours_min_perimeter = 0.0
         self.__filter_contours_min_width = 20.0
         self.__filter_contours_max_width = 160.0
         self.__filter_contours_min_height = 20.0
         self.__filter_contours_max_height = 120.0
         self.__filter_contours_solidity = [0, 100]
-        self.__filter_contours_max_vertices = 1000000
-        self.__filter_contours_min_vertices = 0
-        self.__filter_contours_min_ratio = 0
-        self.__filter_contours_max_ratio = 1000
+        self.__filter_contours_max_vertices = 1000000.0
+        self.__filter_contours_min_vertices = 0.0
+        self.__filter_contours_min_ratio = 0.0
+        self.__filter_contours_max_ratio = 1000.0
 
         self.filter_contours_output = None
 
