@@ -1,4 +1,3 @@
 # Peariscope Software
 
-The system calls `pearistart.py` which calls `peariscope.py`.
-
+The system starts up and calls `pearistart.py` which calls `peariscope.py`
