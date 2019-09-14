@@ -11,12 +11,6 @@ GREEN = (0, 255, 0)
 BLUE = (255, 0, 0)
 YELLOW = (0, 255, 255)
 
-# Configuration parameter defaults
-MIN_REFLECTOR_WIDTH = 0
-MAX_REFLECTOR_WIDTH = 1000
-MIN_REFLECTOR_LENGTH = 0
-MAX_REFLECTOR_LENGTH = 1000
-
 def peariscope(camera, inst):
 
     #
@@ -46,10 +40,10 @@ def peariscope(camera, inst):
     nt = NetworkTables.getTable('Peariscope')
 
     # Set configuration parameters
-    nt.putNumber('min_reflector_width', MIN_REFLECTOR_WIDTH)
-    nt.putNumber('max_reflector_width', MAX_REFLECTOR_WIDTH)
-    nt.putNumber('min_reflector_length', MIN_REFLECTOR_LENGTH)
-    nt.putNumber('max_reflector_length', MAX_REFLECTOR_LENGTH)
+    nt.putNumber('min_reflector_width', 0)
+    nt.putNumber('max_reflector_width', 999)
+    nt.putNumber('min_reflector_length', 0)
+    nt.putNumber('max_reflector_length', 999)
 
     #
     # Peariscope Loop Code
@@ -93,10 +87,10 @@ def peariscope(camera, inst):
 def process_image(image, image_height, image_width, nt):
 
     # Get configuration parameters
-    min_reflector_width = nt.getNumber('min_reflector_width', MIN_REFLECTOR_WIDTH)
-    max_reflector_width = nt.getNumber('max_reflector_width', MAX_REFLECTOR_WIDTH)
-    min_reflector_length = nt.getNumber('min_reflector_length', MIN_REFLECTOR_LENGTH)
-    max_reflector_length = nt.getNumber('max_reflector_length', MAX_REFLECTOR_LENGTH)
+    min_reflector_width = nt.getNumber('min_reflector_width', None)
+    max_reflector_width = nt.getNumber('max_reflector_width', None)
+    min_reflector_length = nt.getNumber('min_reflector_length', None)
+    max_reflector_length = nt.getNumber('max_reflector_length', None)
 
     #
     # Find Contours
@@ -149,7 +143,7 @@ def process_image(image, image_height, image_width, nt):
         cnt_solidity = 100 * cnt_area / cv2.contourArea(cv2.convexHull(cnt))
 
         #
-        # Rotated Features
+        # Rectangle Features
         #
 
         # Find rotated rectangle surrounding the contour.
