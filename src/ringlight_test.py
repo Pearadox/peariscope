@@ -19,6 +19,6 @@ pixels.fill(BLK)
 
 while True:
     for i in range(NUMPIXELS-1, -1, -1):
-        pixels[i] = BLK
+        pixels[i] = RED
         time.sleep(1/NUMPIXELS)
         pixels[i] = GRN 
