@@ -12,34 +12,16 @@ class PeariscopeGrip:
         """initializes all values to presets or None if need to be set
         """
 
-        self.__cv_cvtcolor_code = cv2.COLOR_RGB2GRAY
+        self.__hsv_threshold_hue = [55.03597122302158, 75.20547945205479]
+        self.__hsv_threshold_saturation = [128.41726618705036, 255.0]
+        self.__hsv_threshold_value = [139.88309352517987, 255.0]
 
-        self.cv_cvtcolor_output = None
+        self.hsv_threshold_output = None
 
-        self.__new_size_width = 5.0
-        self.__new_size_height = 5.0
-
-        self.new_size_output = None
-
-        self.__cv_gaussianblur_src = self.cv_cvtcolor_output
-        self.__cv_gaussianblur_ksize = self.new_size_output
-        self.__cv_gaussianblur_sigmax = 0.0
-        self.__cv_gaussianblur_sigmay = 0.0
-        self.__cv_gaussianblur_bordertype = cv2.BORDER_DEFAULT
-
-        self.cv_gaussianblur_output = None
-
-        self.__cv_threshold_src = self.cv_gaussianblur_output
-        self.__cv_threshold_thresh = 200.0
-        self.__cv_threshold_maxval = 255.0
-        self.__cv_threshold_type = cv2.THRESH_BINARY
-
-        self.cv_threshold_output = None
-
-        self.__cv_erode_src = self.cv_threshold_output
+        self.__cv_erode_src = self.hsv_threshold_output
         self.__cv_erode_kernel = None
         self.__cv_erode_anchor = (-1, -1)
-        self.__cv_erode_iterations = 2.0
+        self.__cv_erode_iterations = 3.0
         self.__cv_erode_bordertype = cv2.BORDER_CONSTANT
         self.__cv_erode_bordervalue = (-1)
 
@@ -48,7 +30,7 @@ class PeariscopeGrip:
         self.__cv_dilate_src = self.cv_erode_output
         self.__cv_dilate_kernel = None
         self.__cv_dilate_anchor = (-1, -1)
-        self.__cv_dilate_iterations = 4.0
+        self.__cv_dilate_iterations = 3.0
         self.__cv_dilate_bordertype = cv2.BORDER_CONSTANT
         self.__cv_dilate_bordervalue = (-1)
 
@@ -62,15 +44,15 @@ class PeariscopeGrip:
         self.__filter_contours_contours = self.find_contours_output
         self.__filter_contours_min_area = 0.0
         self.__filter_contours_min_perimeter = 0.0
-        self.__filter_contours_min_width = 20.0
-        self.__filter_contours_max_width = 160.0
-        self.__filter_contours_min_height = 20.0
-        self.__filter_contours_max_height = 120.0
-        self.__filter_contours_solidity = [0, 100]
-        self.__filter_contours_max_vertices = 1000000.0
-        self.__filter_contours_min_vertices = 0.0
+        self.__filter_contours_min_width = 6.0
+        self.__filter_contours_max_width = 100.0
+        self.__filter_contours_min_height = 6.0
+        self.__filter_contours_max_height = 100.0
+        self.__filter_contours_solidity = [89.92805755395683, 100.0]
+        self.__filter_contours_max_vertices = 20.0
+        self.__filter_contours_min_vertices = 4.0
         self.__filter_contours_min_ratio = 0.0
-        self.__filter_contours_max_ratio = 1000.0
+        self.__filter_contours_max_ratio = 10.0
 
         self.filter_contours_output = None
 
@@ -79,24 +61,12 @@ class PeariscopeGrip:
         """
         Runs the pipeline and sets all outputs to new values.
         """
-        # Step CV_cvtColor0:
-        self.__cv_cvtcolor_src = source0
-        (self.cv_cvtcolor_output) = self.__cv_cvtcolor(self.__cv_cvtcolor_src, self.__cv_cvtcolor_code)
-
-        # Step New_Size0:
-        (self.new_size_output) = self.__new_size(self.__new_size_width, self.__new_size_height)
-
-        # Step CV_GaussianBlur0:
-        self.__cv_gaussianblur_src = self.cv_cvtcolor_output
-        self.__cv_gaussianblur_ksize = self.new_size_output
-        (self.cv_gaussianblur_output) = self.__cv_gaussianblur(self.__cv_gaussianblur_src, self.__cv_gaussianblur_ksize, self.__cv_gaussianblur_sigmax, self.__cv_gaussianblur_sigmay, self.__cv_gaussianblur_bordertype)
-
-        # Step CV_Threshold0:
-        self.__cv_threshold_src = self.cv_gaussianblur_output
-        (self.cv_threshold_output) = self.__cv_threshold(self.__cv_threshold_src, self.__cv_threshold_thresh, self.__cv_threshold_maxval, self.__cv_threshold_type)
+        # Step HSV_Threshold0:
+        self.__hsv_threshold_input = source0
+        (self.hsv_threshold_output) = self.__hsv_threshold(self.__hsv_threshold_input, self.__hsv_threshold_hue, self.__hsv_threshold_saturation, self.__hsv_threshold_value)
 
         # Step CV_erode0:
-        self.__cv_erode_src = self.cv_threshold_output
+        self.__cv_erode_src = self.hsv_threshold_output
         (self.cv_erode_output) = self.__cv_erode(self.__cv_erode_src, self.__cv_erode_kernel, self.__cv_erode_anchor, self.__cv_erode_iterations, self.__cv_erode_bordertype, self.__cv_erode_bordervalue)
 
         # Step CV_dilate0:
@@ -113,57 +83,18 @@ class PeariscopeGrip:
 
 
     @staticmethod
-    def __cv_cvtcolor(src, code):
-        """Converts an image from one color space to another.
+    def __hsv_threshold(input, hue, sat, val):
+        """Segment an image based on hue, saturation, and value ranges.
         Args:
-           src: A numpy.ndarray.
-           code: The conversion code. (opencv eum)
-        Result:
-           A numpy.ndarray in the new color space.
-        """
-        return cv2.cvtColor(src, code)
-
-    @staticmethod
-    def __new_size(width, height):
-        """Fills a size with given width and height.
-		Args:
-            width: A number for the width.
-            height: A number for the height.
-        Returns:
-            A list of two numbers that represent a size.
-        """
-        return (width, height)
-
-    @staticmethod
-    def __cv_gaussianblur(src, k_size, sigma_x, sigma_y, border_type):
-        """Performs a Gaussian blur on the image.
-        Args:
-            src: A numpy.ndarray.
-            k_size: A list of two numbers that represent the kernel size.
-            sigma_x: The deviation in X for the Gaussian blur.
-            sigma_y: The deviation in X for the Gaussian blur.
-            border_type: Opencv enum representing the border type.
-        Returns:
-            A blurred numpy.ndarray.
-        """
-        if (k_size == None):
-            k_size = (1, 1)
-        k_size_int = ((int)(k_size[0]),(int)(k_size[1]))
-        return cv2.GaussianBlur(src, k_size_int, sigmaX=sigma_x, sigmaY=sigma_y,
-                            borderType=(int)(border_type))
-
-    @staticmethod
-    def __cv_threshold(src, thresh, max_val, type):
-        """Apply a fixed-level threshold to each array element in an image
-        Args:
-            src: A numpy.ndarray.
-            thresh: Threshold value.
-            max_val: Maximum value for THRES_BINARY and THRES_BINARY_INV.
-            type: Opencv enum.
+            input: A BGR numpy.ndarray.
+            hue: A list of two numbers the are the min and max hue.
+            sat: A list of two numbers the are the min and max saturation.
+            lum: A list of two numbers the are the min and max value.
         Returns:
             A black and white numpy.ndarray.
         """
-        return cv2.threshold(src, thresh, max_val, type)[1]
+        out = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
+        return cv2.inRange(out, (hue[0], sat[0], val[0]),  (hue[1], sat[1], val[1]))
 
     @staticmethod
     def __cv_erode(src, kernel, anchor, iterations, border_type, border_value):
