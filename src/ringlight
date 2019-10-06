@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+import argparse
+import board
+import neopixel
+import time
+
+NUMPIXELS = 16
+
+BLK = (0, 0, 0)
+WHT = (255, 255, 255)
+RED = (255, 0, 0)
+GRN = (0, 255, 0)
+BLU = (0, 0, 255)
+
+# Command-line parsing
+parser = argparse.ArgumentParser(description='Controls the ring light.')
+parser.add_argument('command', choices=['off', 'green', 'blue'])
+args = parser.parse_args()
+command = args.command
+
+pixels = neopixel.NeoPixel(board.D18, NUMPIXELS)
+
+if command == 'off':
+    pixels.fill(BLK)
+elif command == 'green':
+    pixels.fill(GRN)
+elif command == 'blue':
+    pixels.fill(BLU)

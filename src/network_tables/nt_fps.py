@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import time
-from networktables import NetworkTables
 import logging
+from networktables import NetworkTables
 
 # To see messages from networktables, you must setup logging
 logging.basicConfig(level=logging.DEBUG)
