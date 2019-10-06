@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""This helps test the switched cameras."""
+'''Tests the switched cameras.'''
 
 import time
 from networktables import NetworkTables

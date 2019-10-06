@@ -42,16 +42,18 @@ def peariscope(camera, inst):
     time.sleep(1)
 
     # Set configuration parameters
-    nt.putNumber('min_hue', 55.0)
-    nt.putNumber('max_hue', 75.0)
-    nt.putNumber('min_sat', 128.0)
-    nt.putNumber('max_sat', 255.0)
-    nt.putNumber('min_val', 140.0)
-    nt.putNumber('max_val', 255.0)
-    nt.putNumber('min_height', 0)
+    nt.putNumber('min_hue', 55)
+    nt.putNumber('max_hue', 65)
+    nt.putNumber('min_sat', 170)
+    nt.putNumber('max_sat', 255)
+    nt.putNumber('min_val', 100)
+    nt.putNumber('max_val', 255)
+    nt.putNumber('min_height', 6)
     nt.putNumber('max_height', 1000)
-    nt.putNumber('min_width', 0)
+    nt.putNumber('min_width', 6)
     nt.putNumber('max_width', 1000)
+    nt.putNumber('min_vert', 0)
+    nt.putNumber('max_vert', 20)
 
     #
     # Peariscope Loop Code
@@ -72,6 +74,8 @@ def peariscope(camera, inst):
         max_height = nt.getNumber('max_height', None)
         min_width = nt.getNumber('min_width', None)
         max_width = nt.getNumber('max_width', None)
+        min_vert = nt.getNumber('min_vert', None)
+        max_vert = nt.getNumber('max_vert', None)
 
         # Grab a frame from the camera and store it in the preallocated space
         frame_time, image = sink.grabFrame(image)
@@ -109,20 +113,29 @@ def peariscope(camera, inst):
             # Contour size
             x, y, w, h = cv2.boundingRect(contour)
             if (w < min_width or w > max_width):
-                continue
+                continue # Forget this contour
             if (h < min_height or h > max_height):
-                continue
+                continue # Forget this contour
+
+            # Vertex count
+            num_vertex = len(contour)
+            if (num_vertex < min_vert or num_vertex > max_vert):
+                continue # Forget this contour
 
             # Draw the contour
-            cv2.drawContours(image, [contour], 0, BGR_GRN, thickness=-1)
+            cv2.drawContours(image, [contour], 0, color=BGR_BLU, thickness=-1)
 
-            # Contour centroid
+            # Contour centroid (center of mass)
             M = cv2.moments(contour)
             contour_x = int(M['m10']/M['m00'])
             contour_y = int(M['m01']/M['m00'])
 
             # Draw a circle to mark the center of the contour
-            cv2.circle(image, (int(contour_x), int(contour_y)), 3, BGR_RED, -1)
+            cv2.circle(image, center=(contour_x, contour_y), radius=3, color=BGR_RED, thickness=-1)
+
+            # Draw crosshairs to mark the center of the contour
+            cv2.line(image, (contour_x, 0), (contour_x, image_height-1), BGR_RED, 1)
+            cv2.line(image, (0, contour_y), (image_width-1, contour_y), BGR_RED, 1)
 
             # Add the center to the list of detections
             x_list.append(contour_x)
@@ -157,3 +170,4 @@ def peariscope(camera, inst):
         current_time = time.time()
         elapsed_time = current_time - start_time
         nt.putNumber('fps', 1/elapsed_time)
+
