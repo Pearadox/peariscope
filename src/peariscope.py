@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 
 from networktables import NetworkTables
+from subprocess import call
 
 # Define colors (BGR)
 BGR_RED = (0, 0, 255)
@@ -41,6 +42,10 @@ def peariscope(camera, inst):
     nt = NetworkTables.getTable('Peariscope')
     time.sleep(1)
 
+    # Ringlight control
+    ringlight = True
+    nt.putBoolean('ringlight', False)
+
     # Set configuration parameters
     nt.putNumber('min_hue', 55)
     nt.putNumber('max_hue', 65)
@@ -62,6 +67,14 @@ def peariscope(camera, inst):
     current_time = time.time()
     while True: # Forever loop
         start_time = current_time
+
+        # Ringlight control
+        if ringlight != nt.getBoolean('ringlight', False):
+            ringlight = nt.getBoolean('ringlight', False)
+            if ringlight:
+                rc = call('sudo /home/pi/ws/peariscope/src/ringlight_green', shell=True)
+            else:
+                rc = call('sudo /home/pi/ws/peariscope/src/ringlight_off', shell=True)
 
         # Get configuration parameters
         min_hue = nt.getNumber('min_hue', None)
