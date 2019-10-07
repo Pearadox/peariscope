@@ -69,11 +69,13 @@ def peariscope(camera, inst):
         start_time = current_time
 
         # Ringlight control
-        if ringlight != nt.getBoolean('ringlight', False):
-            ringlight = nt.getBoolean('ringlight', False)
+        if ringlight != nt.getBoolean('ringlight', None):
+            ringlight = nt.getBoolean('ringlight', None)
             if ringlight:
+                print('ringlight ON')
                 rc = call('sudo /home/pi/ws/peariscope/src/ringlight_green', shell=True)
             else:
+                print('ringlight OFF')
                 rc = call('sudo /home/pi/ws/peariscope/src/ringlight_off', shell=True)
 
         # Get configuration parameters
