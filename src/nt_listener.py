@@ -6,7 +6,7 @@ from networktables import NetworkTables
 import logging
 
 # To see messages from networktables, you must setup logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig()
 
 def valueChanged(table, key, value, isNew):
     print("{}; key: {}; value: {}; isNew: {}".format(table, key, value, isNew))
