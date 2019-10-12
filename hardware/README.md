@@ -21,16 +21,16 @@ $7.49
 - Up to 100MB/s read and 20MB/s write speeds; UHS Speed Class U1 and Speed Class 10
 - Water proof, Shock proof, Temperature proof, X ray proof, Magnetic proof
 
-## Miuzei Raspberry Pi 3 B+ Case with Fan Cooling and 3× Heat-Sinks, 5V 2.5A Power Supply with On/Off Switch Cable for RPi 3 B+, 3B, 2b
+## Raspberry Pi 3 b+ Case, iUniker Raspberry Pi 3 Model B+ Transparent Case with Raspberry Pi Heatsink for Raspberry Pi 3B+, 3B, 2B
 
-$15.99  
-![Raspberry Pi Case Kit](raspberry_pi_case_kit.png)
+$6.49
+![Raspberry Pi Case](raspberry_pi_case.png)
 
-- Case has the layout for the Raspberry Pi 3 model B+
-- Made of acrylic so won’t block Wifi / Bluetooth signal
-- Plugs on the case to connect GPIO, HDMI, USB, SD, power, etc
-- Mini fan and 3 heatsinks for cooling CPU/ROM/RAM
-- Power supply (2.5A) with on/off switch on the 1.5m long cable
+- This clear protective case is designed specifically for the Raspberry Pi 3 Model B+, 3B, 2B
+- The case is a made of ABS that snaps together around the Raspberry Pi
+- It provides protection and accessibility for the Raspberry Pi
+- Wall mountable. Access to all ports. For New Raspberry Pi 3 B+
+- Comes with 2 pcs Heatsink
 
 ## MakerFocus Raspberry Pi Camera Night Vision Camera Adjustable-Focus Module 5MP OV5647 Webcam Video 1080p and 15CM 50CM FFC Adapter Cables and Camera Mount
 
