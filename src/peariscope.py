@@ -200,3 +200,4 @@ def peariscope(camera, inst):
         elapsed_time = current_time - start_time
         fps = 1/elapsed_time
         nt.putNumber('fps', fps)
+
