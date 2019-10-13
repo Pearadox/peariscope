@@ -1,23 +1,24 @@
 # Peariscope
 
 Peariscope is a computer vision project for FIRST Robotics Team #5414 [Pearadox](http://https://pearadox5414.weebly.com/)
-that implements robotic _pearception_ to assist with robot navigation and manipulation.
+that implements robotic _pearception_ to assist with robot navigation and manipulation.  
 
 ## Hardware
 
 The Peariscope hardware consists of a Raspberry Pi with a MicroSD memory card, a plastic case,
-a camera module (with a case and flex cable), a LED ring light, a level shifter chip, and a power supply.
+a camera module (with a case and flex cable), a LED ring light, a level shifter chip, and a power supply.  
+
 Example hardware can be seen here: [Peariscope Hardware](hardware/README.md)
 
-## Peariscope OS
+## Operating System
 
-The Peariscope runs on a Raspberry Pi using the FRC Raspberry Pi image.
+The Peariscope runs on a Raspberry Pi using the FRC Raspberry Pi image.  
 
 FRC Raspberry Pi documentation is available here:
-[FRC Raspbery Pi](https://wpilib.screenstepslive.com/s/currentCS/m/85074/l/1027241-using-the-raspberry-pi-for-frc)
+[FRC Raspbery Pi](https://wpilib.screenstepslive.com/s/currentCS/m/85074/l/1027241-using-the-raspberry-pi-for-frc)  
 
 The pre-built FRC Raspberry Pi image is available here:
-[FRC Raspberry Pi Image](https://github.com/wpilibsuite/FRCVision-pi-gen/releases)
+[FRC Raspberry Pi Image](https://github.com/wpilibsuite/FRCVision-pi-gen/releases)  
 
 ## Getting Started
 
@@ -57,5 +58,5 @@ which is the complete software that can be modified for future computer vision n
 The Peariscope ring light has 16 invidually controllable LEDs.
 From the src folder:  
 `sudo ./ringlight_green.py` enables all the lights as full-brightness green.  
-`sudo ./ringlighg_off.py` disables all the lights (sets them to black).
+`sudo ./ringlight_off.py` disables all the lights (sets them to black).
 
