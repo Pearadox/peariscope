@@ -23,7 +23,7 @@ $7.49
 
 ## Raspberry Pi 3 b+ Case, iUniker Raspberry Pi 3 Model B+ Transparent Case with Raspberry Pi Heatsink for Raspberry Pi 3B+, 3B, 2B
 
-$6.49
+$6.49  
 ![Raspberry Pi Case](raspberry_pi_case.png)
 
 - This clear protective case is designed specifically for the Raspberry Pi 3 Model B+, 3B, 2B
@@ -34,7 +34,7 @@ $6.49
 
 ## 5MP 1080P Video Camera Module for Raspberry Pi 4 Model B, Pi 3 b+, Pi Zero W Camera with Case Flex Cable (Camera + Holder)
 
-$11.99
+$11.99  
 ![Raspberry Pi Camera](raspberry_pi_camera.png)
 
 - Compatible with Raspberry Pi 4 Model B, Pi 3 Model b+, Pi 3b, Pi Zero, Pi Zero Wireless
