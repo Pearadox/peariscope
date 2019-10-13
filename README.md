@@ -27,7 +27,7 @@ and use [Etcher](https://www.balena.io/etcher/) to image a MicroSD card.
 The MicroSD card needs to be at least 4 GB.  
 2. Put the MicroSD card in the Pi and apply power.  
 The initial boot may take as long as a minute, but later boots will be much faster (20 seconds or less).  
-3. Connect the Pi ethernet to a LAN.  
+3. Connect the Pi Ethernet to a LAN.  
 
 ## Connecting to the Pi
 
@@ -51,11 +51,12 @@ The Peariscope computer vision software uses [robotpy-score](https://robotpy.rea
 from the [RobotPy](https://robotpy.readthedocs.io/en/latest/index.html) project.
 
 Module `pearistart.py` is based on `multiCameraServer.py` from the FRC examples but is modified to start up `peariscope.py`
-which is the complete software that can be modified for future computer vision needs.
+which is the custom software that can be modified for the needs of the team.
 
 ## Illumination
 
 The Peariscope ring light has 16 invidually controllable LEDs.
+
 From the src folder:  
 `sudo ./ringlight_green.py` enables all the lights as full-brightness green.  
 `sudo ./ringlight_off.py` disables all the lights (sets them to black).
