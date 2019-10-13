@@ -8,8 +8,8 @@ $36.98
 ![Raspberry Pi 3 B+](raspberry_pi_3_B+.png)
 
 - 1.4GHz 64-bit quad-core ARMv8 CPU, 1 GB RAM
-- 802.11n Wireless LAN, 10/100Mbps Lan Speed
-- Bluetooth 4.2, Bluetooth Low Energy
+- 802.11n Wireless LAN, 10/100Mbps LAN Speed
+- Bluetooth 4.2, Bluetooth Low Energy (BLE)
 - 4 USB ports, 40 GPIO pins, Full HDMI port, Combined 3.5mm audio jack and composite video
 - Camera interface (CSI), Display interface (DSI), Micro SD card slot, VideoCore IV 3D graphics core
 
@@ -32,17 +32,13 @@ $6.49
 - Wall mountable. Access to all ports. For New Raspberry Pi 3 B+
 - Comes with 2 pcs Heatsink
 
-## MakerFocus Raspberry Pi Camera Night Vision Camera Adjustable-Focus Module 5MP OV5647 Webcam Video 1080p and 15CM 50CM FFC Adapter Cables and Camera Mount
+## 5MP 1080P Video Camera Module for Raspberry Pi 4 Model B, Pi 3 b+, Pi Zero W Camera with Case Flex Cable (Camera + Holder)
 
-$23.99  
-![Night Vision Camera](night_vision_camera.png)
+$11.99
+![Raspberry Pi Camera](raspberry_pi_camera.png)
 
-- Kit includes camera, two fill lights, FFC adapters (15cm and 50cm), and camera mount (acrylic)
-- Camera supports night vision and has manual focus
-- Camera provides 3.3V power output
+- Compatible with Raspberry Pi 4 Model B, Pi 3 Model b+, Pi 3b, Pi Zero, Pi Zero Wireless
+- 5 Megapixel sensor with OV5647 webcam sensor in a fixed-focus lens
+- The camera is capable of 2592 x 1944 pixel static images, and also supports 1080p/30 fps, 720p/ 60fps and 640 x480p 60/90 video recording
+- Specially designed clear acrylic case to protect camera module
 
-Note:
-
-- The LED lights always turn on no matter if the camera is turned on or not
-- The lights will warm up (generally 40℃ to 50℃) when they are working
-- The micro adjustable resistor (beside the lights) can turn down the lights to lower temperatures
