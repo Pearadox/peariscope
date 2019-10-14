@@ -57,7 +57,6 @@ which is the custom software that can be modified for the needs of the team.
 
 The Peariscope ring light has 16 invidually controllable LEDs.
 
-From the src folder:  
+From the `/home/pi/ws/peariscope/src` folder:  
 `sudo ./ringlight_green.py` enables all the lights as full-brightness green.  
 `sudo ./ringlight_off.py` disables all the lights (sets them to black).
-
