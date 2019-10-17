@@ -75,7 +75,7 @@ def peariscope(camera, inst):
             ringlight = nt.getBoolean('ringlight', None)
             if ringlight > 0:
                 print('ringlight ON')
-                rc = call('sudo /home/pi/ws/peariscope/src/ringlight_green.py 2>/dev/null', shell=True)
+                rc = call('sudo /home/pi/ws/peariscope/src/ringlight_on.py 2>/dev/null', shell=True)
             else:
                 print('ringlight OFF')
                 rc = call('sudo /home/pi/ws/peariscope/src/ringlight_off.py 2>/dev/null', shell=True)

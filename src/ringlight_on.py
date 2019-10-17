@@ -6,4 +6,5 @@ import neopixel
 NUMPIXELS = 16
 
 pixels = neopixel.NeoPixel(board.D18, NUMPIXELS)
-pixels.fill((0, 255, 0)) # RGB
+pixels.fill((0, 255, 0)) # RGB -- green
+
