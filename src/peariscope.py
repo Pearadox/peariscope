@@ -8,9 +8,9 @@ from subprocess import call
 
 # Define colors (BGR)
 BGR_RED = (0, 0, 255)
-BGR_GREEN = (0, 255, 0)
-BGR_BLUE = (255, 0, 0)
-BGR_YELLOW = (0, 255, 255)
+BGR_GRN = (0, 255, 0)
+BGR_BLU = (255, 0, 0)
+BGR_YEL = (0, 255, 255)
 
 def peariscope(camera, inst):
 
@@ -42,7 +42,12 @@ def peariscope(camera, inst):
     nt = NetworkTables.getTable('Peariscope')
     time.sleep(1)
 
-    # Set configuration parameters
+    # Set configuration values for LED lights
+    nt.putNumber('led_red', 0)
+    nt.putNumber('led_grn', 255)
+    nt.putNumber('led_blu', 0)
+
+    # Set configuration values for color detection
     nt.putNumber('min_hue', 55)
     nt.putNumber('max_hue', 65)
     nt.putNumber('min_sat', 170)
@@ -50,19 +55,22 @@ def peariscope(camera, inst):
     nt.putNumber('min_val', 100)
     nt.putNumber('max_val', 255)
 
-    # Ringlight control
-    ringlight = True
-    nt.putBoolean('ringlight', False)
-
     #
     # Peariscope Loop Code
     #
+
+    red, grn, blu = -1, -1, -1 # Initial values for LED lights
 
     current_time = time.time()
     while True: # Forever loop
         start_time = current_time
 
-        # Get configuration parameters
+        # Get configuration values for LED lights
+        led_red = nt.getNumber('led_red', None)
+        led_grn = nt.getNumber('led_grn', None)
+        led_blu = nt.getNumber('led_blu', None)
+
+        # Get configuration values for color detection
         min_hue = nt.getNumber('min_hue', None)
         max_hue = nt.getNumber('max_hue', None)
         min_sat = nt.getNumber('min_sat', None)
@@ -70,15 +78,12 @@ def peariscope(camera, inst):
         min_val = nt.getNumber('min_val', None)
         max_val = nt.getNumber('max_val', None)
 
-        # Ringlight control
-        if ringlight != nt.getBoolean('ringlight', None):
-            ringlight = nt.getBoolean('ringlight', None)
-            if ringlight > 0:
-                print('ringlight ON')
-                rc = call('sudo /home/pi/ws/peariscope/src/ringlight_on.py 2>/dev/null', shell=True)
-            else:
-                print('ringlight OFF')
-                rc = call('sudo /home/pi/ws/peariscope/src/ringlight_off.py 2>/dev/null', shell=True)
+        # Ringlight control (only set them if they change)
+        if red != led_red or grn != led_grn or blu != led_blu:
+            red, grn, blu = led_red, led_grn, led_blu
+            command = 'sudo /home/pi/peariscope/src/ringlight_on.py {} {} {} 2>/dev/null'.format(red, grn, blu)
+            print(command)
+            rc = call(command, shell=True)
 
         # Grab a frame from the camera and store it in the preallocated space
         frame_time, image = sink.grabFrame(image)
@@ -105,7 +110,7 @@ def peariscope(camera, inst):
         _, contour_list, _ = cv2.findContours(binary_image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 
         #
-        # Examine Contours
+        # Process Each Contour
         #
 
         x_list = []
@@ -115,7 +120,7 @@ def peariscope(camera, inst):
         for contour in contour_list:
 
             # Draw the contour
-            cv2.drawContours(image, [contour], 0, color=BGR_BLUE, thickness=-1)
+            cv2.drawContours(image, [contour], 0, color=BGR_BLU, thickness=-1)
 
             # Contour area
             area = cv2.contourArea(contour)
@@ -160,16 +165,15 @@ def peariscope(camera, inst):
             cv2.drawContours(image, [box], 0, BGR_RED, 2)
 
             # Filter the contours
-            if rect_long < 5 or rect_short < 5:
-                continue # Forget this contour
+            if rect_long >= 5 and rect_short >= 5:
 
-            # Draw a circle to mark the center of the contour
-            cv2.circle(image, center=(contour_x, contour_y), radius=3, color=BGR_RED, thickness=-1)
+                # Draw a circle to mark the center of the contour
+                cv2.circle(image, center=(contour_x, contour_y), radius=3, color=BGR_RED, thickness=-1)
 
-            # Add the center to the list of detections
-            x_list.append(contour_x)
-            y_list.append(contour_y)
-            angle_list.append(rect_angle)
+                # Add to the list of detections
+                x_list.append(contour_x)
+                y_list.append(contour_y)
+                angle_list.append(rect_angle)
 
         # Output the lists of x and y coordinates of the detections
         nt.putNumberArray('x_list', x_list)
@@ -189,8 +193,12 @@ def peariscope(camera, inst):
         # Draw crosshairs on the image
         image_center_x = int(image_width/2)
         image_center_y = int(image_height/2)
-        cv2.line(image, (image_center_x, 0), (image_center_x, image_height-1), BGR_YELLOW, 1)
-        cv2.line(image, (0, image_center_y), (image_width-1, image_center_y), BGR_YELLOW, 1)
+        cv2.line(image, (image_center_x, 0), (image_center_x, image_height-1), BGR_YEL, 1)
+        cv2.line(image, (0, image_center_y), (image_width-1, image_center_y), BGR_YEL, 1)
+
+        # Draw connectors if exactly two reflectors
+        if len(x_list) == 2:
+            cv2.line(image, (x_list[0], y_list[0]), (x_list[1], y_list[1]), BGR_YEL, 1)
 
         # Give the output stream the image to display
         output_stream.putFrame(image)
@@ -200,4 +208,3 @@ def peariscope(camera, inst):
         elapsed_time = current_time - start_time
         fps = 1/elapsed_time
         nt.putNumber('fps', fps)
-
