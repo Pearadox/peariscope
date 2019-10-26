@@ -196,7 +196,7 @@ def peariscope(camera, inst):
         cv2.line(image, (image_center_x, 0), (image_center_x, image_height-1), BGR_YEL, 1)
         cv2.line(image, (0, image_center_y), (image_width-1, image_center_y), BGR_YEL, 1)
 
-        # Draw connectors if exactly two reflectors
+        # Draw connection if exactly two reflectors
         if len(x_list) == 2:
             cv2.line(image, (x_list[0], y_list[0]), (x_list[1], y_list[1]), BGR_YEL, 1)
 
