@@ -44,7 +44,7 @@ def peariscope(camera, inst):
 
     # Set configuration values for LED lights
     nt.putNumber('led_red', 0)
-    nt.putNumber('led_grn', 255)
+    nt.putNumber('led_grn', 0)
     nt.putNumber('led_blu', 0)
 
     # Set configuration values for color detection
@@ -82,7 +82,6 @@ def peariscope(camera, inst):
         if red != led_red or grn != led_grn or blu != led_blu:
             red, grn, blu = led_red, led_grn, led_blu
             command = 'sudo /home/pi/peariscope/src/ringlight_on.py {} {} {} 2>/dev/null'.format(red, grn, blu)
-            print(command)
             rc = call(command, shell=True)
 
         # Grab a frame from the camera and store it in the preallocated space
@@ -165,15 +164,20 @@ def peariscope(camera, inst):
             cv2.drawContours(image, [box], 0, BGR_RED, 2)
 
             # Filter the contours
-            if rect_long >= 5 and rect_short >= 5:
+            if rect_long < 5 or rect_short < 5:
+                continue # Ignore this contour
 
-                # Draw a circle to mark the center of the contour
-                cv2.circle(image, center=(contour_x, contour_y), radius=3, color=BGR_RED, thickness=-1)
+            # Draw a circle to mark the center of the contour
+            cv2.circle(image, center=(contour_x, contour_y), radius=3, color=BGR_RED, thickness=-1)
 
-                # Add to the list of detections
-                x_list.append(contour_x)
-                y_list.append(contour_y)
-                angle_list.append(rect_angle)
+            # Add to the list of detections
+            x_list.append(contour_x)
+            y_list.append(contour_y)
+            angle_list.append(rect_angle)
+
+        #
+        # Prepare the Outputs
+        #
 
         # Output the lists of x and y coordinates of the detections
         nt.putNumberArray('x_list', x_list)
@@ -207,4 +211,6 @@ def peariscope(camera, inst):
         current_time = time.time()
         elapsed_time = current_time - start_time
         fps = 1/elapsed_time
+        nt.putNumber('elapsed_time', elapsed_time)
         nt.putNumber('fps', fps)
+
