@@ -27,7 +27,7 @@ def peariscope(camera, inst):
     camera_height = config['height']
     camera_width = config['width']
     camera_fps = config['fps']
-    print('camera_height {} camera_width {} fps {}'.format(camera_height, camera_width, camera_fps))
+    print('camera_height: {}, camera_width: {}, fps: {}'.format(camera_height, camera_width, camera_fps))
 
     # Create sink for capturing images from the camera video stream
     sink = inst.getVideo()
