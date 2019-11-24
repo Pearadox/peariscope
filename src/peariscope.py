@@ -15,14 +15,14 @@ BGR_YEL = (0, 255, 255)
 def peariscope(camera, inst):
 
     #
-    # Peariscope Setup Code
+    # Setup
     #
 
     print('Peariscope by Pearadox Robotics Team 5414')
     print('Info', camera.getInfo())
     print('Path', camera.getPath())
 
-    # Load FRC configuration file
+    # Load FRC configuration file (/boot/frc.json)
     config = json.loads(camera.getConfigJson())
     camera_height = config['height']
     camera_width = config['width']
@@ -40,7 +40,7 @@ def peariscope(camera, inst):
 
     # Use network tables to receive configuration parameters and for publishing results
     nt = NetworkTables.getTable('Peariscope')
-    time.sleep(1)
+    time.sleep(1) # Wait for network tables to start
 
     # Set configuration values for LED lights
     nt.putNumber('led_red', 0)
@@ -56,10 +56,11 @@ def peariscope(camera, inst):
     nt.putNumber('max_val', 255)
 
     #
-    # Peariscope Loop Code
+    # Image Loop
     #
 
-    red, grn, blu = -1, -1, -1 # Initial values for LED lights
+    # Initial values for LED lights
+    red, grn, blu = -1, -1, -1
 
     current_time = time.time()
     while True: # Forever loop
@@ -78,7 +79,7 @@ def peariscope(camera, inst):
         min_val = nt.getNumber('min_val', None)
         max_val = nt.getNumber('max_val', None)
 
-        # Ringlight control (only set them if they change)
+        # Ringlight control (set them initially and then only if changes requested)
         if red != led_red or grn != led_grn or blu != led_blu:
             red, grn, blu = led_red, led_grn, led_blu
             command = 'sudo /home/pi/peariscope/src/ringlight_on.py {} {} {} 2>/dev/null'.format(red, grn, blu)
@@ -109,7 +110,7 @@ def peariscope(camera, inst):
         _, contour_list, _ = cv2.findContours(binary_image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 
         #
-        # Process Each Contour
+        # Contour Loop
         #
 
         x_list = []
@@ -118,43 +119,41 @@ def peariscope(camera, inst):
 
         for contour in contour_list:
 
-            # Draw the contour
-            cv2.drawContours(image, [contour], 0, color=BGR_BLU, thickness=-1)
+            #
+            # Compute Features
+            #
 
-            # Contour area
             area = cv2.contourArea(contour)
-
-            # Contour perimeter
             perimeter = cv2.arcLength(contour, True)
-
-            # Contour solidity
             solidity = 100 * area / cv2.contourArea(cv2.convexHull(contour))
 
-            # Contour centroid
+            # Centroid
             M = cv2.moments(contour)
             contour_x = int(M['m10']/M['m00'])
             contour_y = int(M['m01']/M['m00'])
 
-            # Find the rotated rectangle surrounding the contour.
-            # Returns a Box2D structure which contains the following details:
-            # (center (x,y), (width, height), angle of rotation)
+            # Rotated rectangle surrounding the contour
             rect = cv2.minAreaRect(contour)
             rect_center, rect_size, rect_angle = rect
             rect_x, rect_y = rect_center
             rect_long, rect_short = rect_size # long side and short side of reflector
             rect_angle = -rect_angle # horizontal is 0 degrees, CCW is positive
-
             # Make sure rectangle length is bigger than width
             if rect_long < rect_short:
                 temp = rect_long
                 rect_long = rect_short
                 rect_short = temp
                 rect_angle += 90
-
             # Keep the angle between -90 and +90 degrees
             if rect_angle > 90:
                 rect_angle -= 180
 
+            #
+            # Drawing (for all contours)
+            #
+
+            # Draw the contour
+            cv2.drawContours(image, [contour], 0, color=BGR_BLU, thickness=-1)
             # Ratio of long side to short side of bounding rectangle
             ratio = float(rect_long)/float(rect_short)
 
@@ -163,9 +162,16 @@ def peariscope(camera, inst):
             box = np.int0(box)
             cv2.drawContours(image, [box], 0, BGR_RED, 2)
 
-            # Filter the contours
+            #
+            # Filtering
+            #
+
             if rect_long < 5 or rect_short < 5:
                 continue # Ignore this contour
+
+            #
+            # Drawing (for successful contours)
+            #
 
             # Draw a circle to mark the center of the contour
             cv2.circle(image, center=(contour_x, contour_y), radius=3, color=BGR_RED, thickness=-1)
@@ -176,7 +182,7 @@ def peariscope(camera, inst):
             angle_list.append(rect_angle)
 
         #
-        # Prepare the Outputs
+        # Outputs
         #
 
         # Output the lists of x and y coordinates of the detections

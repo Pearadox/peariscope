@@ -13,9 +13,6 @@ import sys
 from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
 from networktables import NetworkTablesInstance
 import ntcore
-
-# This file is a modified version of:
-# /home/pi/examples/python-multiCameraServer/multiCameraServer.py
 import peariscope
 
 #   JSON format:
