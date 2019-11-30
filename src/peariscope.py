@@ -59,7 +59,7 @@ def peariscope(camera, inst):
     # Image Loop
     #
 
-    # Initial values for LED lights
+    # Initial values for LED lights to trigger initial setting
     red, grn, blu = -1, -1, -1
 
     current_time = time.time()
@@ -79,16 +79,16 @@ def peariscope(camera, inst):
         min_val = nt.getNumber('min_val', None)
         max_val = nt.getNumber('max_val', None)
 
-        # Ringlight control (set them initially and then only if changes requested)
+        # Ringlight control (set them initially and then only if changes are requested)
         if red != led_red or grn != led_grn or blu != led_blu:
             red, grn, blu = led_red, led_grn, led_blu
             command = 'sudo /home/pi/peariscope/src/ringlight_on.py {} {} {} 2>/dev/null'.format(red, grn, blu)
-            rc = call(command, shell=True)
+            rc = call(command, shell=True) # Run the script in the shell
 
         # Grab a frame from the camera and store it in the preallocated space
         frame_time, image = sink.grabFrame(image)
 
-        # If there is an error then notify the output and skip the iteration
+        # If there is an error then notify the output and skip this iteration
         if frame_time == 0:
             output_stream.notifyError(sink.getError())
             continue
@@ -119,8 +119,11 @@ def peariscope(camera, inst):
 
         for contour in contour_list:
 
+            # Draw the contour
+            cv2.drawContours(image, [contour], 0, color=BGR_BLU, thickness=-1)
+
             #
-            # Compute Features
+            # Features
             #
 
             area = cv2.contourArea(contour)
@@ -147,13 +150,6 @@ def peariscope(camera, inst):
             # Keep the angle between -90 and +90 degrees
             if rect_angle > 90:
                 rect_angle -= 180
-
-            #
-            # Drawing (for all contours)
-            #
-
-            # Draw the contour
-            cv2.drawContours(image, [contour], 0, color=BGR_BLU, thickness=-1)
             # Ratio of long side to short side of bounding rectangle
             ratio = float(rect_long)/float(rect_short)
 
@@ -166,12 +162,9 @@ def peariscope(camera, inst):
             # Filtering
             #
 
+            # Ignore unwanted contours
             if rect_long < 5 or rect_short < 5:
-                continue # Ignore this contour
-
-            #
-            # Drawing (for successful contours)
-            #
+                continue
 
             # Draw a circle to mark the center of the contour
             cv2.circle(image, center=(contour_x, contour_y), radius=3, color=BGR_RED, thickness=-1)

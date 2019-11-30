@@ -7,7 +7,7 @@ import logging
 # To see messages from networktables, you must setup logging
 logging.basicConfig(level=logging.DEBUG)
 
-NetworkTables.initialize(server="192.168.1.21")
+NetworkTables.initialize(server="10.54.14.20")
 nt = NetworkTables.getTable("Peariscope")
 time.sleep(1)
 

@@ -13,4 +13,4 @@ if len(sys.argv) == 4:
     blu = int(round(float(sys.argv[3])))
     pixels.fill((red, grn, blu))
 else:
-    pixels.fill((0, 255, 0)) # green
+    pixels.fill((0, 255, 0)) # Green
