@@ -56,7 +56,7 @@ $11.99
 ## 74AHCT125 - Quad Level-Shifter (3V to 5V)
 
 $1.50  
-![Level Shifter](level_shifter.png)
+![Level Shifter](74AHCT125_level_shifter.png)
 
 - Level shifting chips let you connect 3V and 5V devices together safely
 - Current Output: 8mA
