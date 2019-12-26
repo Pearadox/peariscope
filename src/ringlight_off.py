@@ -4,6 +4,6 @@ import board
 import neopixel
 
 NUMPIXELS = 16
-
 pixels = neopixel.NeoPixel(board.D18, NUMPIXELS)
-pixels.fill((0, 0, 0)) # Black (off)
+
+pixels.fill((0, 0, 0)) # Turn off pixels
