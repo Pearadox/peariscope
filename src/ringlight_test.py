@@ -19,4 +19,4 @@ while True:
     for i in range(NUMPIXELS-1, -1, -1):
         pixels[i] = RED
         time.sleep(1/NUMPIXELS)
-        pixels[i] = GREEN 
+        pixels[i] = GREEN
