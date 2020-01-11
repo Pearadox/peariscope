@@ -13,7 +13,7 @@ if len(sys.argv) != 4:
 # To see messages from networktables, you must setup logging
 logging.basicConfig(level=logging.DEBUG)
 
-NetworkTables.initialize(server="192.168.1.21")
+NetworkTables.initialize(server="localhost")
 nt = NetworkTables.getTable("Peariscope")
 time.sleep(1)
 

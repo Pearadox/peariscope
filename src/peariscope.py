@@ -14,19 +14,20 @@ BGR_YEL = (0, 255, 255)
 # Define default parameters
 DEFAULT_VALS = {
     'led_red' : 0,
-    'led_grn' : 0,
+    'led_grn' : 255,
     'led_blu' : 0,
     'min_hue' : 55,
-    'max_hue' : 65,
-    'min_sat' : 170,
+    'max_hue' : 70,
+    'min_sat' : 0,
     'max_sat' : 255,
-    'min_val' : 100,
+    'min_val' : 40,
     'max_val' : 255,
 }
 
 def ringlight_on(red, grn, blu):
     print("Setting ringlights to", red, grn, blu)
-    command = 'sudo /home/pi/peariscope/src/ringlight_on.py {} {} {} 2>/dev/null'.format(red, grn, blu)
+    script = '/home/pi/peariscope/src/ringlight_on.py'
+    command = 'sudo {} {} {} {} 2>/dev/null'.format(script, red, grn, blu)
     rc = subprocess.call(command, shell=True) # Run the script in the shell
 
 def peariscope(camera, inst):
@@ -44,7 +45,8 @@ def peariscope(camera, inst):
     camera_height = config['height']
     camera_width = config['width']
     camera_fps = config['fps']
-    print('camera_height: {}, camera_width: {}, fps: {}'.format(camera_height, camera_width, camera_fps))
+    print('camera_height: {}, camera_width: {}, fps: {}'.format(
+        camera_height, camera_width, camera_fps))
 
     # Create sink for capturing images from the camera video stream
     sink = inst.getVideo()
@@ -55,7 +57,7 @@ def peariscope(camera, inst):
     # Create output stream for sending processed images
     output_stream = inst.putVideo('Peariscope', camera_width, camera_height)
 
-    # Use network tables to receive configuration parameters and for publishing results
+    # Use network tables to receive configuration and publish results
     nt = networktables.NetworkTables.getTable('Peariscope')
     time.sleep(1) # Wait for network tables to start
 
@@ -72,7 +74,7 @@ def peariscope(camera, inst):
     ringlight_on(red, grn, blu)
 
     #
-    # Image Loop (process each image)
+    # Image Loop (process each image from the camera)
     #
 
     current_time = time.time()
@@ -112,57 +114,68 @@ def peariscope(camera, inst):
 
         # Segment the image based on hue, saturation, and value ranges
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        binary_image = cv2.inRange(hsv_image, (min_hue, min_sat, min_val), (max_hue, max_sat, max_val))
+        binary_image = cv2.inRange(hsv_image,
+            (min_hue, min_sat, min_val), (max_hue, max_sat, max_val))
 
-        # Remove any small blobs of noise using morphological filtering (erosions and dilations)
-        binary_image = cv2.erode(binary_image, None, iterations=1)
-        binary_image = cv2.dilate(binary_image, None, iterations=1)
+        # Opening (remove any small noise objects)
+        #binary_image = cv2.erode(binary_image, None, iterations=1)
+        #binary_image = cv2.dilate(binary_image, None, iterations=1)
+
+        # Closing (fill in any gaps)
         binary_image = cv2.dilate(binary_image, None, iterations=1)
         binary_image = cv2.erode(binary_image, None, iterations=1)
 
         #
-        # Contour Loop (process each contour/blob/object in the image)
+        # Contour Loop (process each object in the image)
         #
 
         # Find contours in the binary image
-        _, contour_list, _ = cv2.findContours(binary_image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
+        _, contour_list, _ = cv2.findContours(binary_image,
+             mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 
-        x_list = []
-        y_list = []
+        # Initialize arrays of results
+        x_list = [] # X-coordinates of found reflectors
+        y_list = [] # Y-coordinates of found reflectors
 
+        # For each contour of every object...
         for contour in contour_list:
 
-            # Draw the contour
+            # Color in the contour so we know it was seen
             cv2.drawContours(image, [contour], 0, color=BGR_BLU, thickness=-1)
 
-            # Features
+            # Compute the area of the contour
             area = cv2.contourArea(contour)
-            perimeter = cv2.arcLength(contour, True)
-            solidity = 100 * area / cv2.contourArea(cv2.convexHull(contour))
 
-            # Filtering
-            if area < 10:
-                continue # Reject this contour
-
-            # Bounding rectangle
+            # Compute the bounding box of the contour
             x, y, w, h = cv2.boundingRect(contour)
-            image = cv2.rectangle(image, (x,y), (x+w, y+h), BGR_RED, 2) # Draw
+            center_x = int(x + w/2)
+            center_y = int(y + h/2)
 
-            # Centroid
-            M = cv2.moments(contour)
-            contour_x = int(M['m10']/M['m00'])
-            contour_y = int(M['m01']/M['m00'])
-            cv2.circle(image, center=(contour_x, contour_y), radius=3, color=BGR_RED, thickness=-1) # Draw
+            # Keep only the contours we want
+            if (100 < area < 2750) and (25 < w < 250) and (w > h * 1.25):
 
-            # Add to the list of detections
-            x_list.append(contour_x)
-            y_list.append(contour_y)
+                # Color in the successful contour
+                cv2.drawContours(image, [contour], 0, color=BGR_YEL, thickness=-1)
+
+                # Draw the bounding box
+                image = cv2.rectangle(image, (x,y), (x+w, y+h), BGR_RED, 1)
+
+                # Draw a circle to mark the center
+                cv2.circle(image, center=(center_x, center_y),
+                    radius=2, color=BGR_YEL, thickness=-1)
+
+                # Print the features of this contour
+                #print("area", area, "height", h, "width", w)
+
+                # Add to the lists of results
+                x_list.append(center_x)
+                y_list.append(center_y)
 
         #
         # Outputs
         #
 
-        # Output the lists of x and y coordinates of the detections
+        # Output the results
         nt.putNumberArray('x_list', x_list)
         nt.putNumberArray('y_list', y_list)
 
@@ -182,12 +195,13 @@ def peariscope(camera, inst):
         cv2.line(image, (image_center_x, 0), (image_center_x, image_height-1), BGR_YEL, 1)
         cv2.line(image, (0, image_center_y), (image_width-1, image_center_y), BGR_YEL, 1)
 
-        # Give the output stream the image to display
+        # Display the marked-up image on a separate output stream
         output_stream.putFrame(image)
 
-        # Compute elapsed time and FPS
+        # Compute the elapsed time and FPS
         current_time = time.time()
         elapsed_time = current_time - start_time
         fps = 1/elapsed_time
         nt.putNumber('elapsed_time', elapsed_time)
         nt.putNumber('fps', fps)
+
