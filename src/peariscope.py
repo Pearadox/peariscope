@@ -12,6 +12,15 @@ BGR_GRN = (0, 255, 0)
 BGR_BLU = (255, 0, 0)
 BGR_YEL = (0, 255, 255)
 
+DEFAULT_VALS = {
+        'min_hue' : 55,
+        'max_hue' : 65,
+        'min_sat' : 170,
+        'max_sat' : 255,
+        'min_val' : 100,
+        'max_val' : 255
+    }
+
 def peariscope(camera, inst):
 
     #
@@ -42,18 +51,16 @@ def peariscope(camera, inst):
     nt = NetworkTables.getTable('Peariscope')
     time.sleep(1) # Wait for network tables to start
 
-    # Set configuration values for LED lights
-    nt.putNumber('led_red', 0)
-    nt.putNumber('led_grn', 0)
-    nt.putNumber('led_blu', 0)
-
-    # Set configuration values for color detection
-    nt.putNumber('min_hue', 55)
-    nt.putNumber('max_hue', 65)
-    nt.putNumber('min_sat', 170)
-    nt.putNumber('max_sat', 255)
-    nt.putNumber('min_val', 100)
-    nt.putNumber('max_val', 255)
+    # Set configuration values for LED lights if not set already
+    for color in ('led_red', 'led_blu', 'led_grn'):
+        if nt.getNumber(color) == None:
+            nt.putNumber(color, 0)
+    
+    # Set configuration values for color detection if not set already
+    
+    for k, v in DEFAULT_VALS:
+        if nt.getNumber(k) == None:
+            nt.putNumber(k, v)
 
     #
     # Image Loop
@@ -212,4 +219,3 @@ def peariscope(camera, inst):
         fps = 1/elapsed_time
         nt.putNumber('elapsed_time', elapsed_time)
         nt.putNumber('fps', fps)
-
