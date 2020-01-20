@@ -12,4 +12,4 @@ if os.geteuid() != 0:
 NUMPIXELS = 16
 pixels = neopixel.NeoPixel(board.D18, NUMPIXELS)
 for i in range(NUMPIXELS):
-    pixels[i] = (0, 0, 0)
+    pixels[i] = (0, 255, 0)
