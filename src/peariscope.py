@@ -1,30 +1,38 @@
 import json
-import time
 import numpy as np
 import cv2
+import networktables
+import time
+import subprocess
 
-from networktables import NetworkTables
-from subprocess import call
-
-# Define colors (BGR)
+# Define some colors (BGR)
 BGR_RED = (0, 0, 255)
 BGR_GRN = (0, 255, 0)
 BGR_BLU = (255, 0, 0)
 BGR_YEL = (0, 255, 255)
 
+# Define default parameters
 DEFAULT_VALS = {
-        'min_hue' : 55,
-        'max_hue' : 65,
-        'min_sat' : 170,
-        'max_sat' : 255,
-        'min_val' : 100,
-        'max_val' : 255
-    }
+    'led_red' : 0,
+    'led_grn' : 0,
+    'led_blu' : 0,
+    'min_hue' : 55,
+    'max_hue' : 65,
+    'min_sat' : 170,
+    'max_sat' : 255,
+    'min_val' : 100,
+    'max_val' : 255,
+}
+
+def ringlight_on(red, grn, blu):
+    print("Setting ringlights to", red, grn, blu)
+    command = 'sudo /home/pi/peariscope/src/ringlight_on.py {} {} {} 2>/dev/null'.format(red, grn, blu)
+    rc = subprocess.call(command, shell=True) # Run the script in the shell
 
 def peariscope(camera, inst):
 
     #
-    # Setup
+    # Setup (runs only once)
     #
 
     print('Peariscope by Pearadox Robotics Team 5414')
@@ -48,26 +56,24 @@ def peariscope(camera, inst):
     output_stream = inst.putVideo('Peariscope', camera_width, camera_height)
 
     # Use network tables to receive configuration parameters and for publishing results
-    nt = NetworkTables.getTable('Peariscope')
+    nt = networktables.NetworkTables.getTable('Peariscope')
     time.sleep(1) # Wait for network tables to start
 
-    # Set configuration values for LED lights if not set already
-    for color in ('led_red', 'led_blu', 'led_grn'):
-        if nt.getNumber(color) == None:
-            nt.putNumber(color, 0)
-    
-    # Set configuration values for color detection if not set already
-    
-    for k, v in DEFAULT_VALS:
-        if nt.getNumber(k) == None:
-            nt.putNumber(k, v)
+    # Set all configuration values if not set already
+    for key, value in DEFAULT_VALS.items():
+        print(key, value)
+        if nt.getNumber(key, None) == None:
+            nt.putNumber(key, value)
+
+    # Set ringlight to initial color
+    red = nt.getNumber('led_red', None)
+    grn = nt.getNumber('led_grn', None)
+    blu = nt.getNumber('led_blu', None)
+    ringlight_on(red, grn, blu)
 
     #
-    # Image Loop
+    # Image Loop (process each image)
     #
-
-    # Initial values for LED lights to trigger initial setting
-    red, grn, blu = -1, -1, -1
 
     current_time = time.time()
     while True: # Forever loop
@@ -86,11 +92,10 @@ def peariscope(camera, inst):
         min_val = nt.getNumber('min_val', None)
         max_val = nt.getNumber('max_val', None)
 
-        # Ringlight control (set them initially and then only if changes are requested)
-        if red != led_red or grn != led_grn or blu != led_blu:
+        # Ringlight control (only if changes are requested)
+        if led_red != red or led_grn != grn or led_blu != blu:
             red, grn, blu = led_red, led_grn, led_blu
-            command = 'sudo /home/pi/peariscope/src/ringlight_on.py {} {} {} 2>/dev/null'.format(red, grn, blu)
-            rc = call(command, shell=True) # Run the script in the shell
+            ringlight_on(red, grn, blu)
 
         # Grab a frame from the camera and store it in the preallocated space
         frame_time, image = sink.grabFrame(image)
@@ -110,76 +115,48 @@ def peariscope(camera, inst):
         binary_image = cv2.inRange(hsv_image, (min_hue, min_sat, min_val), (max_hue, max_sat, max_val))
 
         # Remove any small blobs of noise using morphological filtering (erosions and dilations)
-        binary_image = cv2.erode(binary_image, None, iterations=3)
-        binary_image = cv2.dilate(binary_image, None, iterations=3)
+        binary_image = cv2.erode(binary_image, None, iterations=1)
+        binary_image = cv2.dilate(binary_image, None, iterations=1)
+        binary_image = cv2.dilate(binary_image, None, iterations=1)
+        binary_image = cv2.erode(binary_image, None, iterations=1)
+
+        #
+        # Contour Loop (process each contour/blob/object in the image)
+        #
 
         # Find contours in the binary image
         _, contour_list, _ = cv2.findContours(binary_image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 
-        #
-        # Contour Loop
-        #
-
         x_list = []
         y_list = []
-        angle_list = []
 
         for contour in contour_list:
 
             # Draw the contour
             cv2.drawContours(image, [contour], 0, color=BGR_BLU, thickness=-1)
 
-            #
             # Features
-            #
-
             area = cv2.contourArea(contour)
             perimeter = cv2.arcLength(contour, True)
             solidity = 100 * area / cv2.contourArea(cv2.convexHull(contour))
+
+            # Filtering
+            if area < 10:
+                continue # Reject this contour
+
+            # Bounding rectangle
+            x, y, w, h = cv2.boundingRect(contour)
+            image = cv2.rectangle(image, (x,y), (x+w, y+h), BGR_RED, 2) # Draw
 
             # Centroid
             M = cv2.moments(contour)
             contour_x = int(M['m10']/M['m00'])
             contour_y = int(M['m01']/M['m00'])
-
-            # Rotated rectangle surrounding the contour
-            rect = cv2.minAreaRect(contour)
-            rect_center, rect_size, rect_angle = rect
-            rect_x, rect_y = rect_center
-            rect_long, rect_short = rect_size # long side and short side of reflector
-            rect_angle = -rect_angle # horizontal is 0 degrees, CCW is positive
-            # Make sure rectangle length is bigger than width
-            if rect_long < rect_short:
-                temp = rect_long
-                rect_long = rect_short
-                rect_short = temp
-                rect_angle += 90
-            # Keep the angle between -90 and +90 degrees
-            if rect_angle > 90:
-                rect_angle -= 180
-            # Ratio of long side to short side of bounding rectangle
-            ratio = float(rect_long)/float(rect_short)
-
-            # Draw rotated rectangle
-            box = cv2.boxPoints(rect)
-            box = np.int0(box)
-            cv2.drawContours(image, [box], 0, BGR_RED, 2)
-
-            #
-            # Filtering
-            #
-
-            # Ignore unwanted contours
-            if rect_long < 5 or rect_short < 5:
-                continue
-
-            # Draw a circle to mark the center of the contour
-            cv2.circle(image, center=(contour_x, contour_y), radius=3, color=BGR_RED, thickness=-1)
+            cv2.circle(image, center=(contour_x, contour_y), radius=3, color=BGR_RED, thickness=-1) # Draw
 
             # Add to the list of detections
             x_list.append(contour_x)
             y_list.append(contour_y)
-            angle_list.append(rect_angle)
 
         #
         # Outputs
@@ -188,7 +165,6 @@ def peariscope(camera, inst):
         # Output the lists of x and y coordinates of the detections
         nt.putNumberArray('x_list', x_list)
         nt.putNumberArray('y_list', y_list)
-        nt.putNumberArray('angle_list', angle_list)
 
         # Compute the coordinates as percentage distances from image center
         # for x (horizontal), 0 is center, -100 is image left, 100 is image right
@@ -205,10 +181,6 @@ def peariscope(camera, inst):
         image_center_y = int(image_height/2)
         cv2.line(image, (image_center_x, 0), (image_center_x, image_height-1), BGR_YEL, 1)
         cv2.line(image, (0, image_center_y), (image_width-1, image_center_y), BGR_YEL, 1)
-
-        # Draw connection if exactly two reflectors
-        if len(x_list) == 2:
-            cv2.line(image, (x_list[0], y_list[0]), (x_list[1], y_list[1]), BGR_YEL, 1)
 
         # Give the output stream the image to display
         output_stream.putFrame(image)

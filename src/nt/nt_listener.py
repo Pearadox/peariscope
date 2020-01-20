@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 def valueChanged(table, key, value, is_new):
     print('{}; key: {}; value: {}; is_new: {}'.format(table, key, value, is_new))
 
-NetworkTables.initialize(server='10.54.14.20')
+NetworkTables.initialize(server='192.168.1.21')
 sd = NetworkTables.getTable('Peariscope')
 sd.addEntryListener(valueChanged)
 
