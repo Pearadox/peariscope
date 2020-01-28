@@ -179,7 +179,7 @@ BGR_YEL = (0, 255, 255)
 # Define default parameters
 DEFAULT_VALS = {
     'led_red' : 0,
-    'led_grn' : 255,
+    'led_grn' : 0,
     'led_blu' : 0,
     'min_hue' : 55,
     'max_hue' : 70,
