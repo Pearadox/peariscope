@@ -294,8 +294,8 @@ def peariscope(camera, inst):
         #binary_image = cv2.dilate(binary_image, None, iterations=1)
 
         # Closing (fill in any gaps)
-        binary_image = cv2.dilate(binary_image, None, iterations=1)
-        binary_image = cv2.erode(binary_image, None, iterations=1)
+        binary_image = cv2.dilate(binary_image, None, iterations=2)
+        binary_image = cv2.erode(binary_image, None, iterations=2)
 
         #
         # Contour Loop (process each object in the image)
@@ -323,25 +323,35 @@ def peariscope(camera, inst):
             center_x = int(x + w/2)
             center_y = int(y + h/2)
 
+            # Compute the ratio of the bounding box
+            ratio = w / h * 1.0
+
+            # Draw the bounding box
+            image = cv2.rectangle(image, (x,y), (x+w, y+h), BGR_RED, 1)
+
+            # Compute the fill of the contour
+            fill = area / (h * w * 1.0)
+
             # Keep only the contours we want
-            if (100 < area < 1100) and (25 < h < 60) and (50 < w < 130) and (w > h * 2.0):
+            if (50 < area < 2000) and (0 < fill < 0.15) and (ratio > 1.3):
 
                 # Color in the successful contour
                 cv2.drawContours(image, [contour], 0, color=BGR_YEL, thickness=-1)
 
                 # Draw the bounding box
-                image = cv2.rectangle(image, (x,y), (x+w, y+h), BGR_RED, 1)
+                image = cv2.rectangle(image, (x,y), (x+w, y+h), BGR_YEL, 1)
 
                 # Draw a circle to mark the center
                 cv2.circle(image, center=(center_x, center_y),
                     radius=2, color=BGR_YEL, thickness=-1)
 
-                # Print the features of this contour
-                # print("area", area, "height", h, "width", w)
-
                 # Add to the lists of results
                 x_list.append(center_x)
                 y_list.append(center_y)
+
+                print("GOOD:", "area", area, "height", h, "width", w, "fill", fill, "ratio", ratio)
+            else:
+                print("bad:", "area", area, "height", h, "width", w, "fill", fill, "ratio", ratio)
 
         #
         # Outputs
