@@ -179,11 +179,11 @@ BGR_YEL = (0, 255, 255)
 # Define default parameters
 DEFAULT_VALS = {
     'led_red' : 0,
-    'led_grn' : 0,
+    'led_grn' : 255,
     'led_blu' : 0,
     'min_hue' : 55,
-    'max_hue' : 70,
-    'min_sat' : 0,
+    'max_hue' : 65,
+    'min_sat' : 255,
     'max_sat' : 255,
     'min_val' : 40,
     'max_val' : 255,
@@ -226,11 +226,18 @@ def peariscope(camera, inst):
     nt = networktables.NetworkTables.getTable('Peariscope')
     time.sleep(1) # Wait for network tables to start
 
+    '''
     # Set all configuration values if not set already
     for key, value in DEFAULT_VALS.items():
         print(key, value)
         if nt.getNumber(key, None) == None:
             nt.putNumber(key, value)
+    '''
+
+    # Set all configuration values
+    for key, value in DEFAULT_VALS.items():
+        print(key, value)
+        nt.putNumber(key, value)
 
     # Set ringlight to initial color
     red = nt.getNumber('led_red', None)
@@ -317,7 +324,7 @@ def peariscope(camera, inst):
             center_y = int(y + h/2)
 
             # Keep only the contours we want
-            if (100 < area < 2750) and (25 < w < 250) and (w > h * 1.25):
+            if (100 < area < 1100) and (25 < h < 60) and (50 < w < 130) and (w > h * 2.0):
 
                 # Color in the successful contour
                 cv2.drawContours(image, [contour], 0, color=BGR_YEL, thickness=-1)
@@ -330,7 +337,7 @@ def peariscope(camera, inst):
                     radius=2, color=BGR_YEL, thickness=-1)
 
                 # Print the features of this contour
-                #print("area", area, "height", h, "width", w)
+                # print("area", area, "height", h, "width", w)
 
                 # Add to the lists of results
                 x_list.append(center_x)
