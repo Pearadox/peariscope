@@ -9,6 +9,7 @@ import cv2
 import time
 import subprocess
 import networktables
+import math
 
 from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
 
@@ -52,6 +53,17 @@ def readCameraConfig(config):
 
     cameraConfigs.append(cam)
     return True
+
+def readCalibrationFile(path: str):
+    fs = cv2.FileStorage(path, cv2.FileStorage_READ)
+    if fs.isOpened():
+        cam_mat = fs.getNode(CAMERA_MATRIX_NAME).mat()
+        dist_coeff = fs.getNode(DISTORTION_COEFFICIENTS_NAME).mat()
+        return cam_mat, dist_coeff
+    else:
+        raise ValueError(
+            "Specified calibration file does not exist or cannot be opened"
+        )
 
 def readSwitchedCameraConfig(config):
     """Read single switched camera configuration."""
@@ -189,6 +201,15 @@ DEFAULT_VALS = {
     'max_val' : 255,
 }
 
+TARGET_POINTS = np.array(
+    [
+        [-0.498475, 0.0, 0.0],  # Top left
+        [0.498475, 0.0, 0.0],  # Top right
+        [-0.2492375, -0.4318, 0.0],  # Bottom left
+        [0.2492375, -0.4318, 0.0],  # Bottom right
+    ]
+)
+
 def ringlight_on(red, grn, blu):
     print("Setting ringlights to", red, grn, blu)
     script = '/home/pi/peariscope/src/ringlight_on.py'
@@ -212,6 +233,8 @@ def peariscope(camera, inst):
     camera_fps = config['fps']
     print('camera_height: {}, camera_width: {}, fps: {}'.format(
         camera_height, camera_width, camera_fps))
+    
+    camera_matrix, distortion_coeffs = readCalibrationFile('./calibration/')
 
     # Create sink for capturing images from the camera video stream
     sink = inst.getVideo()
@@ -308,6 +331,10 @@ def peariscope(camera, inst):
         # Initialize arrays of results
         x_list = [] # X-coordinates of found reflectors
         y_list = [] # Y-coordinates of found reflectors
+        
+        pos_list = []
+        dist_list = []
+        angle_list = []
 
         # For each contour of every object...
         for contour in contour_list:
@@ -333,7 +360,9 @@ def peariscope(camera, inst):
             fill = area / (h * w * 1.0)
 
             # Keep only the contours we want
-            if (50 < area < 2000) and (0 < fill < 0.15) and (ratio > 1.3):
+            corners = cv2.approxPolyDP(contour, 0.02 * cv2.arcLength(contour, True), True)
+            
+            if (50 < area < 2000) and (0 < fill < 0.15) and (ratio > 1.3) and len(corners) == 4:
 
                 # Color in the successful contour
                 cv2.drawContours(image, [contour], 0, color=BGR_YEL, thickness=-1)
@@ -348,6 +377,18 @@ def peariscope(camera, inst):
                 # Add to the lists of results
                 x_list.append(center_x)
                 y_list.append(center_y)
+                
+                _, rvec, tvec = cv2.solvePnP(TARGET_POINTS, corners, camera_matrix, distortion_coeffs)
+                rot, _ = cv2.Rodrigues(rvec)
+                
+                angle1 = math.atan2(x, y)
+                rot_t = rot.transpose()
+                pzero_world = np.matmul(rot_t, -tvec)
+                angle2 = math.atan2(pzero_world[0][0], pzero_world[2][0])
+                
+                pos_list.append([x, y, z])
+                dist_list.append(math.sqrt(x**2 + z**2))   
+                angle_list.append([angle1, angle2])         
 
                 print("GOOD:", "area", area, "height", h, "width", w, "fill", fill, "ratio", ratio)
             else:
@@ -386,6 +427,8 @@ def peariscope(camera, inst):
         fps = 1/elapsed_time
         nt.putNumber('elapsed_time', elapsed_time)
         nt.putNumber('fps', fps)
+        
+        
 
 #######################
 # End Peariscope Code #
