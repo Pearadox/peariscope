@@ -181,7 +181,8 @@ def peariscope(camera, inst):
             # Compute the fill of the contour
             fill = area / (rect_long * rect_short)
 
-            print("{:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(rect_long, rect_short, rect_angle, ratio, fill))
+            print("area {:.2f} long {:.2f} short {:.2f} angle {:.2f} ratio {:.2f} fill {:.2f}".format(
+                area, rect_long, rect_short, rect_angle, ratio, fill))
 
             # Keep only the contours we want
             if (50 < area < 2000) and (ratio > 1.3) and (0 < fill < 0.15):
@@ -237,3 +238,4 @@ if __name__ == "__main__":
 
     # Peariscope uses only the first (non-switched) camera and its instance
     peariscope(mcs.cameras[0], mcs.insts[0])
+
