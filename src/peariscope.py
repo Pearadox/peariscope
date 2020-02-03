@@ -360,7 +360,7 @@ def peariscope(camera, inst):
             fill = area / (h * w * 1.0)
 
             # Keep only the contours we want
-            corners = cv2.approxPolyDP(contour, 0.02 * cv2.arcLength(contour, True), True)
+            corners = cv2.convexHull(contour)
             
             if (50 < area < 2000) and (0 < fill < 0.15) and (ratio > 1.3) and len(corners) == 4:
 
