@@ -379,12 +379,16 @@ def peariscope(camera, inst):
 
             # Keep only the contours we want
 <<<<<<< HEAD
+<<<<<<< HEAD
             if (150 < area) and (-15 < rect_angle < 15) and (ratio > 1.5) and (fill < 0.2): # optimized for trench position
 
                 print("area {:.2f} long {:.2f} short {:.2f} angle {:.2f} ratio {:.2f} fill {:.2f}".format(
                     area, rect_long, rect_short, rect_angle, ratio, fill))
 =======
             corners = cv2.approxPolyDP(contour, 0.02 * cv2.arcLength(contour, True), True)
+=======
+            corners = cv2.convexHull(contour)
+>>>>>>> convex hull instead of approxPolyDP
             
             if (50 < area < 2000) and (0 < fill < 0.15) and (ratio > 1.3) and len(corners) == 4:
 >>>>>>> added calibration and solvePnP
