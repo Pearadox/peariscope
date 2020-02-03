@@ -7,7 +7,182 @@ import json
 import numpy as np
 import cv2
 import networktables
+<<<<<<< HEAD
 import peariscope.src.multiCameraServer as mcs
+=======
+import math
+
+from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
+
+configFile = "/boot/frc.json"
+
+class CameraConfig: pass
+
+team = None
+server = False
+cameraConfigs = []
+switchedCameraConfigs = []
+cameras = []
+insts = []
+
+def parseError(str):
+    """Report parse error."""
+    print("config error in '" + configFile + "': " + str, file=sys.stderr)
+
+def readCameraConfig(config):
+    """Read single camera configuration."""
+    cam = CameraConfig()
+
+    # name
+    try:
+        cam.name = config["name"]
+    except KeyError:
+        parseError("could not read camera name")
+        return False
+
+    # path
+    try:
+        cam.path = config["path"]
+    except KeyError:
+        parseError("camera '{}': could not read path".format(cam.name))
+        return False
+
+    # stream properties
+    cam.streamConfig = config.get("stream")
+
+    cam.config = config
+
+    cameraConfigs.append(cam)
+    return True
+
+def readCalibrationFile(path: str):
+    fs = cv2.FileStorage(path, cv2.FileStorage_READ)
+    if fs.isOpened():
+        cam_mat = fs.getNode(CAMERA_MATRIX_NAME).mat()
+        dist_coeff = fs.getNode(DISTORTION_COEFFICIENTS_NAME).mat()
+        return cam_mat, dist_coeff
+    else:
+        raise ValueError(
+            "Specified calibration file does not exist or cannot be opened"
+        )
+
+def readSwitchedCameraConfig(config):
+    """Read single switched camera configuration."""
+    cam = CameraConfig()
+
+    # name
+    try:
+        cam.name = config["name"]
+    except KeyError:
+        parseError("could not read switched camera name")
+        return False
+
+    # path
+    try:
+        cam.key = config["key"]
+    except KeyError:
+        parseError("switched camera '{}': could not read key".format(cam.name))
+        return False
+
+    switchedCameraConfigs.append(cam)
+    return True
+
+def readConfig():
+    """Read configuration file."""
+    global team
+    global server
+
+    # parse file
+    try:
+        with open(configFile, "rt", encoding="utf-8") as f:
+            j = json.load(f)
+    except OSError as err:
+        print("could not open '{}': {}".format(configFile, err), file=sys.stderr)
+        return False
+
+    # top level must be an object
+    if not isinstance(j, dict):
+        parseError("must be JSON object")
+        return False
+
+    # team number
+    try:
+        team = j["team"]
+    except KeyError:
+        parseError("could not read team number")
+        return False
+
+    # ntmode (optional)
+    if "ntmode" in j:
+        str = j["ntmode"]
+        if str.lower() == "client":
+            server = False
+        elif str.lower() == "server":
+            server = True
+        else:
+            parseError("could not understand ntmode value '{}'".format(str))
+
+    # cameras
+    try:
+        cameras = j["cameras"]
+    except KeyError:
+        parseError("could not read cameras")
+        return False
+    for camera in cameras:
+        if not readCameraConfig(camera):
+            return False
+
+    # switched cameras
+    if "switched cameras" in j:
+        for camera in j["switched cameras"]:
+            if not readSwitchedCameraConfig(camera):
+                return False
+
+    return True
+
+def startCamera(config):
+    """Start running the camera."""
+    print("Starting camera '{}' on {}".format(config.name, config.path))
+    inst = CameraServer.getInstance()
+    camera = UsbCamera(config.name, config.path)
+    server = inst.startAutomaticCapture(camera=camera, return_server=True)
+
+    camera.setConfigJson(json.dumps(config.config))
+    camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
+
+    if config.streamConfig is not None:
+        server.setConfigJson(json.dumps(config.streamConfig))
+
+    return camera, inst
+
+def startSwitchedCamera(config):
+    """Start running the switched camera."""
+    print("Starting switched camera '{}' on {}".format(config.name, config.key))
+    server = CameraServer.getInstance().addSwitchedCamera(config.name)
+
+    def listener(fromobj, key, value, isNew):
+        if isinstance(value, float):
+            i = int(value)
+            if i >= 0 and i < len(cameras):
+              server.setSource(cameras[i])
+        elif isinstance(value, str):
+            for i in range(len(cameraConfigs)):
+                if value == cameraConfigs[i].name:
+                    server.setSource(cameras[i])
+                    break
+
+    networktables.NetworkTablesInstance.getDefault().getEntry(config.key).addListener(
+        listener,
+        ntcore.constants.NT_NOTIFY_IMMEDIATE |
+        ntcore.constants.NT_NOTIFY_NEW |
+        ntcore.constants.NT_NOTIFY_UPDATE)
+
+    return server
+
+#########################
+# Start Peariscope Code #
+#########################
+>>>>>>> added calibration and solvePnP
 
 # Define some colors (BGR)
 BGR_BLACK = (0, 0, 0)
@@ -29,6 +204,15 @@ DEFAULT_VALS = {
     'min_val' : 40,
     'max_val' : 255,
 }
+
+TARGET_POINTS = np.array(
+    [
+        [-0.498475, 0.0, 0.0],  # Top left
+        [0.498475, 0.0, 0.0],  # Top right
+        [-0.2492375, -0.4318, 0.0],  # Bottom left
+        [0.2492375, -0.4318, 0.0],  # Bottom right
+    ]
+)
 
 def ringlight_on(red, grn, blu):
     print("Setting ringlights to", red, grn, blu)
@@ -56,7 +240,14 @@ def peariscope(camera, inst):
     camera_height = config['height']
     camera_width = config['width']
     camera_fps = config['fps']
+<<<<<<< HEAD
     print('camera_height: {}, camera_width: {}, fps: {}'.format(camera_height, camera_width, camera_fps))
+=======
+    print('camera_height: {}, camera_width: {}, fps: {}'.format(
+        camera_height, camera_width, camera_fps))
+    
+    camera_matrix, distortion_coeffs = readCalibrationFile('./calibration/')
+>>>>>>> added calibration and solvePnP
 
     # Create sink for capturing images from the camera video stream
     sink = inst.getVideo()
@@ -149,6 +340,10 @@ def peariscope(camera, inst):
         # Initialize arrays of results
         x_list = [] # X-coordinates of found reflectors
         y_list = [] # Y-coordinates of found reflectors
+        
+        pos_list = []
+        dist_list = []
+        angle_list = []
 
         # For each contour of every object...
         for contour in contour_list:
@@ -183,10 +378,16 @@ def peariscope(camera, inst):
             fill = area / (rect_long * rect_short)
 
             # Keep only the contours we want
+<<<<<<< HEAD
             if (150 < area) and (-15 < rect_angle < 15) and (ratio > 1.5) and (fill < 0.2): # optimized for trench position
 
                 print("area {:.2f} long {:.2f} short {:.2f} angle {:.2f} ratio {:.2f} fill {:.2f}".format(
                     area, rect_long, rect_short, rect_angle, ratio, fill))
+=======
+            corners = cv2.approxPolyDP(contour, 0.02 * cv2.arcLength(contour, True), True)
+            
+            if (50 < area < 2000) and (0 < fill < 0.15) and (ratio > 1.3) and len(corners) == 4:
+>>>>>>> added calibration and solvePnP
 
                 # Color in the successful contour
                 cv2.drawContours(output_img, [contour], 0, color=BGR_GREEN, thickness=-1)
@@ -198,8 +399,29 @@ def peariscope(camera, inst):
                 cv2.circle(output_img, center=(int(rect_x), int(rect_y)), radius=3, color=BGR_YELLOW, thickness=-1)
 
                 # Add to the lists of results
+<<<<<<< HEAD
                 x_list.append(rect_x)
                 y_list.append(rect_y)
+=======
+                x_list.append(center_x)
+                y_list.append(center_y)
+                
+                _, rvec, tvec = cv2.solvePnP(TARGET_POINTS, corners, camera_matrix, distortion_coeffs)
+                rot, _ = cv2.Rodrigues(rvec)
+                
+                angle1 = math.atan2(x, y)
+                rot_t = rot.transpose()
+                pzero_world = np.matmul(rot_t, -tvec)
+                angle2 = math.atan2(pzero_world[0][0], pzero_world[2][0])
+                
+                pos_list.append([x, y, z])
+                dist_list.append(math.sqrt(x**2 + z**2))   
+                angle_list.append([angle1, angle2])         
+
+                print("GOOD:", "area", area, "height", h, "width", w, "fill", fill, "ratio", ratio)
+            else:
+                print("bad:", "area", area, "height", h, "width", w, "fill", fill, "ratio", ratio)
+>>>>>>> added calibration and solvePnP
 
         #
         # Outputs
@@ -232,6 +454,8 @@ def peariscope(camera, inst):
         fps = 1/elapsed_time
         nt.putNumber('elapsed_time', elapsed_time)
         nt.putNumber('fps', fps)
+        
+        
 
 if __name__ == "__main__":
     if len(sys.argv) >= 2:
