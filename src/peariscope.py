@@ -123,10 +123,6 @@ def peariscope(camera, inst):
         hsv_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2HSV)
         binary_img = cv2.inRange(hsv_img, (min_hue, min_sat, min_val), (max_hue, max_sat, max_val))
 
-        # Opening (remove any small noise objects)
-        #binary_img = cv2.erode(binary_img, None, iterations=1)
-        #binary_img = cv2.dilate(binary_img, None, iterations=1)
-
         # Closing (fill in any gaps)
         binary_img = cv2.dilate(binary_img, None, iterations=2)
         binary_img = cv2.erode(binary_img, None, iterations=2)
@@ -172,23 +168,23 @@ def peariscope(camera, inst):
             if rect_angle > 90:
                 rect_angle -= 180
 
-            # Draw rotated rectangle
-            cv2.drawContours(output_img, [np.int0(cv2.boxPoints(rect))], 0, BGR_YELLOW, 2)
-
             # Ratio of long side to short side of rotated rectangle
             ratio = rect_long / rect_short
 
             # Compute the fill of the contour
             fill = area / (rect_long * rect_short)
 
-            print("area {:.2f} long {:.2f} short {:.2f} angle {:.2f} ratio {:.2f} fill {:.2f}".format(
-                area, rect_long, rect_short, rect_angle, ratio, fill))
-
             # Keep only the contours we want
-            if (50 < area < 2000) and (ratio > 1.3) and (0 < fill < 0.15):
+            if (150 < area) and (-15 < rect_angle < 15) and (ratio > 1.5) and (fill < 0.2): # optimized for trench position
+
+                print("area {:.2f} long {:.2f} short {:.2f} angle {:.2f} ratio {:.2f} fill {:.2f}".format(
+                    area, rect_long, rect_short, rect_angle, ratio, fill))
 
                 # Color in the successful contour
                 cv2.drawContours(output_img, [contour], 0, color=BGR_GREEN, thickness=-1)
+
+                # Draw rotated rectangle
+                cv2.drawContours(output_img, [np.int0(cv2.boxPoints(rect))], 0, BGR_YELLOW, 2)
 
                 # Draw a circle to mark the center
                 cv2.circle(output_img, center=(int(rect_x), int(rect_y)), radius=3, color=BGR_YELLOW, thickness=-1)
@@ -238,4 +234,3 @@ if __name__ == "__main__":
 
     # Peariscope uses only the first (non-switched) camera and its instance
     peariscope(mcs.cameras[0], mcs.insts[0])
-
