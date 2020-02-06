@@ -13,7 +13,7 @@ import peariscope.src.multiCameraServer as mcs
 BGR_BLACK = (0, 0, 0)
 BGR_WHITE = (255, 255, 255)
 BGR_RED = (0, 0, 255)
-BGR_GREEN = (2, 222, 132) # Alien armpit
+BGR_GREEN = (0, 255, 0)
 BGR_BLUE = (255, 0, 0)
 BGR_YELLOW = (0, 255, 255)
 
@@ -35,6 +35,11 @@ def ringlight_on(red, grn, blu):
     script = 'peariscope/src/ringlight_on.py'
     command = 'sudo {} {} {} {} 2>/dev/null'.format(script, red, grn, blu)
     rc = subprocess.call(command, shell=True) # Run the script in the shell
+
+def get_temperature():
+    result = subprocess.check_output(['vcgencmd', 'measure_temp'])
+    temperature = float(result.decode('UTF-8')[5:][:-3])
+    return temperature
 
 def peariscope(camera, inst):
 
@@ -85,6 +90,9 @@ def peariscope(camera, inst):
     current_time = time.time()
     while True: # Forever loop
         start_time = current_time
+
+        # Publish the temperature of the pi
+        nt.putNumber('temperature', get_temperature())
 
         # Get configuration values for LED lights
         led_red = nt.getNumber('led_red', None)
