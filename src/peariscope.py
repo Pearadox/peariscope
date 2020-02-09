@@ -10,7 +10,6 @@ import time
 import subprocess
 import networktables
 import math
-
 from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
 
 configFile = "/boot/frc.json"
@@ -23,6 +22,9 @@ cameraConfigs = []
 switchedCameraConfigs = []
 cameras = []
 insts = []
+
+CAMERA_MATRIX_NAME = 'camera_matrix'
+DISTORTION_COEFFICIENTS_NAME = 'distortion_coefficients'
 
 def parseError(str):
     """Report parse error."""
@@ -203,10 +205,10 @@ DEFAULT_VALS = {
 
 TARGET_POINTS = np.array(
     [
-        [-0.498475, 0.0, 0.0],  # Top left
-        [0.498475, 0.0, 0.0],  # Top right
-        [-0.2492375, -0.4318, 0.0],  # Bottom left
-        [0.2492375, -0.4318, 0.0],  # Bottom right
+        [[-0.498475, 0.0, 0.0]],  # Top left
+        [[0.498475, 0.0, 0.0]],  # Top right
+        [[-0.2492375, -0.4318, 0.0]],  # Bottom left
+        [[0.2492375, -0.4318, 0.0]],  # Bottom right
     ]
 )
 
@@ -234,7 +236,7 @@ def peariscope(camera, inst):
     print('camera_height: {}, camera_width: {}, fps: {}'.format(
         camera_height, camera_width, camera_fps))
     
-    camera_matrix, distortion_coeffs = readCalibrationFile('./calibration/')
+    camera_matrix, distortion_coeffs = readCalibrationFile('./calibration/outputs')
 
     # Create sink for capturing images from the camera video stream
     sink = inst.getVideo()
@@ -360,7 +362,7 @@ def peariscope(camera, inst):
             fill = area / (h * w * 1.0)
 
             # Keep only the contours we want
-            corners = cv2.convexHull(contour)
+            corners = cv2.approxPolyDP(contour, 0.1 * cv2.arcLength(contour, True), True)
             
             if (50 < area < 2000) and (0 < fill < 0.15) and (ratio > 1.3) and len(corners) == 4:
 
@@ -378,7 +380,7 @@ def peariscope(camera, inst):
                 x_list.append(center_x)
                 y_list.append(center_y)
                 
-                _, rvec, tvec = cv2.solvePnP(TARGET_POINTS, corners, camera_matrix, distortion_coeffs)
+                _, rvec, tvec = cv2.solvePnP(TARGET_POINTS, corners.asType(np.float64), camera_matrix, distortion_coeffs)
                 rot, _ = cv2.Rodrigues(rvec)
                 
                 x = tvec[0][0]
