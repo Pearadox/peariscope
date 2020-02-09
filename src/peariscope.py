@@ -7,9 +7,6 @@ import json
 import numpy as np
 import cv2
 import networktables
-<<<<<<< HEAD
-import peariscope.src.multiCameraServer as mcs
-=======
 import math
 
 from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
@@ -182,7 +179,6 @@ def startSwitchedCamera(config):
 #########################
 # Start Peariscope Code #
 #########################
->>>>>>> added calibration and solvePnP
 
 # Define some colors (BGR)
 BGR_BLACK = (0, 0, 0)
@@ -240,14 +236,10 @@ def peariscope(camera, inst):
     camera_height = config['height']
     camera_width = config['width']
     camera_fps = config['fps']
-<<<<<<< HEAD
-    print('camera_height: {}, camera_width: {}, fps: {}'.format(camera_height, camera_width, camera_fps))
-=======
     print('camera_height: {}, camera_width: {}, fps: {}'.format(
         camera_height, camera_width, camera_fps))
     
     camera_matrix, distortion_coeffs = readCalibrationFile('./calibration/')
->>>>>>> added calibration and solvePnP
 
     # Create sink for capturing images from the camera video stream
     sink = inst.getVideo()
@@ -378,20 +370,9 @@ def peariscope(camera, inst):
             fill = area / (rect_long * rect_short)
 
             # Keep only the contours we want
-<<<<<<< HEAD
-<<<<<<< HEAD
-            if (150 < area) and (-15 < rect_angle < 15) and (ratio > 1.5) and (fill < 0.2): # optimized for trench position
-
-                print("area {:.2f} long {:.2f} short {:.2f} angle {:.2f} ratio {:.2f} fill {:.2f}".format(
-                    area, rect_long, rect_short, rect_angle, ratio, fill))
-=======
             corners = cv2.approxPolyDP(contour, 0.02 * cv2.arcLength(contour, True), True)
-=======
-            corners = cv2.convexHull(contour)
->>>>>>> convex hull instead of approxPolyDP
             
             if (50 < area < 2000) and (0 < fill < 0.15) and (ratio > 1.3) and len(corners) == 4:
->>>>>>> added calibration and solvePnP
 
                 # Color in the successful contour
                 cv2.drawContours(output_img, [contour], 0, color=BGR_GREEN, thickness=-1)
@@ -403,19 +384,11 @@ def peariscope(camera, inst):
                 cv2.circle(output_img, center=(int(rect_x), int(rect_y)), radius=3, color=BGR_YELLOW, thickness=-1)
 
                 # Add to the lists of results
-<<<<<<< HEAD
-                x_list.append(rect_x)
-                y_list.append(rect_y)
-=======
                 x_list.append(center_x)
                 y_list.append(center_y)
                 
                 _, rvec, tvec = cv2.solvePnP(TARGET_POINTS, corners, camera_matrix, distortion_coeffs)
                 rot, _ = cv2.Rodrigues(rvec)
-                
-                x = tvec[0][0]
-                y = tvec[1][0]
-                z = tvec[2][0]
                 
                 angle1 = math.atan2(x, y)
                 rot_t = rot.transpose()
@@ -429,7 +402,6 @@ def peariscope(camera, inst):
                 print("GOOD:", "area", area, "height", h, "width", w, "fill", fill, "ratio", ratio)
             else:
                 print("bad:", "area", area, "height", h, "width", w, "fill", fill, "ratio", ratio)
->>>>>>> added calibration and solvePnP
 
         #
         # Outputs
