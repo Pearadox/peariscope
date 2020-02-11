@@ -397,14 +397,10 @@ def peariscope(camera, inst):
                 _, rvec, tvec = cv2.solvePnP(TARGET_POINTS, corners, camera_matrix, distortion_coeffs)
                 rot, _ = cv2.Rodrigues(rvec)
                 
-<<<<<<< HEAD
-                angle1 = math.atan2(x, y)
-=======
                 x = tvec[0][0]
                 z = tvec[1][0] * np.sin(math.pi/12) + tvec[2][0] * np.sin(math.pi/12)
                 
                 angle1 = np.arctan2(x, z)
->>>>>>> fixed position and rotation
                 rot_t = rot.transpose()
                 pzero_world = np.matmul(rot_t, -tvec)
                 x_from_target = pzero_world[0][0]
