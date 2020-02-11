@@ -8,7 +8,10 @@ import numpy as np
 import cv2
 import networktables
 import math
+<<<<<<< HEAD
 
+=======
+>>>>>>> f58a9129ce552d5ba2735cdeaa92b3756acbd812
 from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
 
 configFile = "/boot/frc.json"
@@ -21,6 +24,9 @@ cameraConfigs = []
 switchedCameraConfigs = []
 cameras = []
 insts = []
+
+CAMERA_MATRIX_NAME = 'camera_matrix'
+DISTORTION_COEFFICIENTS_NAME = 'distortion_coefficients'
 
 def parseError(str):
     """Report parse error."""
@@ -203,10 +209,17 @@ DEFAULT_VALS = {
 
 TARGET_POINTS = np.array(
     [
+<<<<<<< HEAD
         [-0.498475, 0.0, 0.0],  # Top left
         [0.498475, 0.0, 0.0],  # Top right
         [-0.2492375, -0.4318, 0.0],  # Bottom left
         [0.2492375, -0.4318, 0.0],  # Bottom right
+=======
+        [[-0.498475, 0.0, 0.0]],  # Top left
+        [[0.498475, 0.0, 0.0]],  # Top right
+        [[-0.2492375, -0.4318, 0.0]],  # Bottom left
+        [[0.2492375, -0.4318, 0.0]],  # Bottom right
+>>>>>>> f58a9129ce552d5ba2735cdeaa92b3756acbd812
     ]
 )
 
@@ -239,7 +252,11 @@ def peariscope(camera, inst):
     print('camera_height: {}, camera_width: {}, fps: {}'.format(
         camera_height, camera_width, camera_fps))
     
+<<<<<<< HEAD
     camera_matrix, distortion_coeffs = readCalibrationFile('./calibration/')
+=======
+    camera_matrix, distortion_coeffs = readCalibrationFile('./calibration/outputs')
+>>>>>>> f58a9129ce552d5ba2735cdeaa92b3756acbd812
 
     # Create sink for capturing images from the camera video stream
     sink = inst.getVideo()
@@ -372,12 +389,18 @@ def peariscope(camera, inst):
 
             # Keep only the contours we want
 <<<<<<< HEAD
+<<<<<<< HEAD
             corners = cv2.approxPolyDP(contour, 0.02 * cv2.arcLength(contour, True), True)
 =======
             corners = cv2.convexHull(contour)
             corners = cv2.approxPolyDP(corners, 5, True)
             cv2.drawContours(iamge, corners, 0, color=BGR_GRN, thickness=7)
 >>>>>>> fixed position and rotation
+=======
+            corners = cv2.convexHull(contour)
+            corners = cv2.approxPolyDP(corners, 5, True)
+            cv2.drawContours(iamge, corners, 0, color=BGR_GRN, thickness=7)
+>>>>>>> f58a9129ce552d5ba2735cdeaa92b3756acbd812
             
             if (50 < area < 2000) and (0 < fill < 0.15) and (ratio > 1.3) and len(corners) == 4:
 
@@ -394,7 +417,11 @@ def peariscope(camera, inst):
                 x_list.append(center_x)
                 y_list.append(center_y)
                 
+<<<<<<< HEAD
                 _, rvec, tvec = cv2.solvePnP(TARGET_POINTS, corners, camera_matrix, distortion_coeffs)
+=======
+                _, rvec, tvec = cv2.solvePnP(TARGET_POINTS, corners.asType(np.float64), camera_matrix, distortion_coeffs)
+>>>>>>> f58a9129ce552d5ba2735cdeaa92b3756acbd812
                 rot, _ = cv2.Rodrigues(rvec)
                 
                 x = tvec[0][0]
@@ -463,6 +490,13 @@ def peariscope(camera, inst):
         nt.putNumber('fps', fps)
         
         
+<<<<<<< HEAD
+=======
+
+#######################
+# End Peariscope Code #
+#######################
+>>>>>>> f58a9129ce552d5ba2735cdeaa92b3756acbd812
 
 if __name__ == "__main__":
     if len(sys.argv) >= 2:
