@@ -333,7 +333,8 @@ def peariscope(camera, inst):
         x_list = [] # X-coordinates of found reflectors
         y_list = [] # Y-coordinates of found reflectors
         
-        pos_list = []
+        target_pos_list = []
+        camera_pos_list = []
         dist_list = []
         angle_list = []
 
@@ -370,7 +371,13 @@ def peariscope(camera, inst):
             fill = area / (rect_long * rect_short)
 
             # Keep only the contours we want
+<<<<<<< HEAD
             corners = cv2.approxPolyDP(contour, 0.02 * cv2.arcLength(contour, True), True)
+=======
+            corners = cv2.convexHull(contour)
+            corners = cv2.approxPolyDP(corners, 5, True)
+            cv2.drawContours(iamge, corners, 0, color=BGR_GRN, thickness=7)
+>>>>>>> fixed position and rotation
             
             if (50 < area < 2000) and (0 < fill < 0.15) and (ratio > 1.3) and len(corners) == 4:
 
@@ -390,14 +397,24 @@ def peariscope(camera, inst):
                 _, rvec, tvec = cv2.solvePnP(TARGET_POINTS, corners, camera_matrix, distortion_coeffs)
                 rot, _ = cv2.Rodrigues(rvec)
                 
+<<<<<<< HEAD
                 angle1 = math.atan2(x, y)
+=======
+                x = tvec[0][0]
+                z = tvec[1][0] * np.sin(math.pi/12) + tvec[2][0] * np.sin(math.pi/12)
+                
+                angle1 = np.arctan2(x, z)
+>>>>>>> fixed position and rotation
                 rot_t = rot.transpose()
                 pzero_world = np.matmul(rot_t, -tvec)
-                angle2 = math.atan2(pzero_world[0][0], pzero_world[2][0])
+                x_from_target = pzero_world[0][0]
+                z_from_target = pzero_world[2][0]
+                angle2 = np.arctan2(pzero_world[0][0], pzero_world[2][0])
                 
-                pos_list.append([x, y, z])
+                target_pos_list.append([x, z])
+                camera_pos_list.append([x_from_target, z_from_target])
                 dist_list.append(math.sqrt(x**2 + z**2))   
-                angle_list.append([angle1, angle2])         
+                angle_list.append([angle1, angle2])
 
                 print("GOOD:", "area", area, "height", h, "width", w, "fill", fill, "ratio", ratio)
             else:
@@ -420,6 +437,20 @@ def peariscope(camera, inst):
         y_list_pct = [round(y, 1) for y in y_list_pct]
         nt.putNumberArray('x_list_pct', x_list_pct)
         nt.putNumberArray('y_list_pct', y_list_pct)
+        
+        if len(target_pos_list) > 0:
+            target_pos_list = target_pos_list[0]
+            nt.putNumberArray('target_pos_list', target_pos_list)
+        
+        if len(camera_pos_list) > 0:
+            camera_pos_list = camera_pos_list[0]
+            nt.putNumberArray('camera_pos_list', camera_pos_list)
+            
+        if len(angle_list) > 0:
+            angle_list = angle_list[0]
+            nt.putNumberArray('angle_list', angle_list)
+            
+        nt.putNumberArray('dist_list', dist_list)
 
         # Draw crosshairs on the image
         cv2.line(output_img, (img_center_x, 0), (img_center_x, img_height-1), BGR_YELLOW, 1)
