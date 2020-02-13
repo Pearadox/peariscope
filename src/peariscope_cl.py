@@ -20,7 +20,7 @@ BGR_YELLOW = (0, 255, 255)
 # Define default parameters
 DEFAULT_VALS = {
     'led_red' : 0,
-    'led_grn' : 255,
+    'led_grn' : 0,
     'led_blu' : 0,
     'min_hue' : 55,
     'max_hue' : 65,
@@ -183,7 +183,7 @@ def peariscope(camera, inst):
             fill = area / (rect_long * rect_short)
 
             # Keep only the contours we want
-            if (150 < area) and (-15 < rect_angle < 15) and (ratio > 1.5) and (fill < 0.2): # optimized for trench position
+            if (150 < area) and (-20 < rect_angle < 20) and (ratio > 1.5) and (fill < 0.25): # optimized for trench position
 
                 print("area {:.2f} long {:.2f} short {:.2f} angle {:.2f} ratio {:.2f} fill {:.2f}".format(
                     area, rect_long, rect_short, rect_angle, ratio, fill))
