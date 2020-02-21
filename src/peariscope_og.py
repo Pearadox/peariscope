@@ -20,7 +20,7 @@ BGR_YELLOW = (0, 255, 255)
 # Define default parameters
 DEFAULT_VALS = {
     'led_red' : 0,
-    'led_grn' : 0,
+    'led_grn' : 255,
     'led_blu' : 0,
     'min_hue' : 55,
     'max_hue' : 65,
@@ -92,7 +92,7 @@ def peariscope(camera, inst):
         start_time = current_time
 
         # Publish the temperature of the pi
-        nt.putNumber('temperature', get_temperature())
+        #nt.putNumber('temperature', get_temperature())
 
         # Get configuration values for LED lights
         led_red = nt.getNumber('led_red', None)
@@ -137,7 +137,7 @@ def peariscope(camera, inst):
 
         # Create an output image for display
         output_img = np.zeros_like(input_img)
-        output_img[:] = BGR_BLUE
+        #output_img[:] = BGR_BLUE
 
         # Find contours in the binary image
         _, contour_list, _ = cv2.findContours(binary_img, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
@@ -153,13 +153,13 @@ def peariscope(camera, inst):
         # For each contour of every object...
         for contour in contour_list:
 
-            # Color in the contour so we know it was seen
-            cv2.drawContours(output_img, [contour], 0, color=BGR_RED, thickness=-1)
-
             # Compute the area of the contour
             area = cv2.contourArea(contour)
             if area < 10:
                 continue # Immediately eliminate small contours
+
+            # Color in the contour so we know it was seen
+            cv2.drawContours(output_img, [contour], 0, color=BGR_RED, thickness=-1)
 
             # Compute the rotated rectangle surrounding the contour
             rect = cv2.minAreaRect(contour)
