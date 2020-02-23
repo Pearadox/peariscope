@@ -4,7 +4,6 @@ The following hardware was used to build the prototype unit and is available on 
 
 ## Element14 Raspberry Pi 3 B+ Motherboard
 
-$36.98  
 ![Raspberry Pi 3 B+](raspberry_pi_3_b+.png)
 
 - 1.4GHz 64-bit quad-core ARMv8 CPU, 1 GB RAM
@@ -15,7 +14,6 @@ $36.98
 
 ## Samsung 32GB 95MB/s (U1) MicroSDHC EVO Select Memory Card with Adapter
 
-$7.49  
 ![Micro SD Card](micro_sd_card.png)
 
 - Up to 100MB/s read and 20MB/s write speeds; UHS Speed Class U1 and Speed Class 10
@@ -23,7 +21,6 @@ $7.49
 
 ## Raspberry Pi 3 B+ Case, iUniker Raspberry Pi 3 Model B+ Transparent Case with Raspberry Pi Heatsink for Raspberry Pi 3B+, 3B, 2B
 
-$6.49  
 ![Raspberry Pi Case](raspberry_pi_case.png)
 
 - This clear protective case is designed specifically for the Raspberry Pi 3 Model B+, 3B, 2B
@@ -34,17 +31,15 @@ $6.49
 
 ## 5MP 1080P Video Camera Module for Raspberry Pi 4 Model B, Pi 3 B+, Pi Zero W Camera with Case Flex Cable (Camera + Holder)
 
-$11.99  
 ![Raspberry Pi Camera](raspberry_pi_camera.png)
 
 - Compatible with Raspberry Pi 4 Model B, Pi 3 Model B+, Pi 3B, Pi Zero, Pi Zero Wireless
 - 5 Megapixel sensor with OV5647 webcam sensor in a fixed-focus lens
-- The camera is capable of 2592 x 1944 pixel static images, and also supports 1080p/30 fps, 720p/60 fps and 640 x480p 60/90 video recording
+- The camera is capable of 2592x1944 pixel static images, and also supports 1080p/30 fps, 720p/60 fps and 640x480p 60/90 video
 - Specially designed clear acrylic case to protect camera module
 
-## CHINLY 2pcs 16 Leds WS2812B WS2812 5050 RGB LED Pixel Ring Lamp Light Individually Addressable Full Dream Color DC5V
+## CHINLY 16 Leds WS2812B WS2812 5050 RGB LED Pixel Ring Lamp Light Individually Addressable Full Dream Color DC5V
 
-$11.99  
 ![Ring Light](ring_light.png)
 
 - LED Chip: WS2812B SMD5050 RGB LED
@@ -55,11 +50,9 @@ $11.99
 
 ## 74AHCT125 - Quad Level-Shifter (3V to 5V)
 
-$1.50  
 ![Level Shifter](74AHCT125_level_shifter.png)
 
 - Level shifting chips let you connect 3V and 5V devices together safely
 - Current Output: 8mA
 - Voltage Supply: 4.5 V ~ 5.5 V
 - Operating Temperature: -40ºC ~ 125ºC
-
