@@ -8,7 +8,7 @@ that implements robotic _pearception_ to assist with robot navigation and manipu
 The Peariscope hardware consists of a Raspberry Pi with a MicroSD memory card, a plastic case,
 a camera module (with a case and flex cable), a LED ring light, a level shifter chip, and a power supply.  
 
-Example hardware can be seen here: [Peariscope Hardware](hardware/README.md)
+Example hardware and circuit diagram can be seen here: [Peariscope Hardware](hardware/README.md)
 
 ## Operating System
 
