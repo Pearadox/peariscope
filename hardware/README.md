@@ -56,3 +56,9 @@ The following hardware was used to build the prototype unit and is available on 
 - Current Output: 8mA
 - Voltage Supply: 4.5 V ~ 5.5 V
 - Operating Temperature: -40ºC ~ 125ºC
+
+# Peariscope Wiring
+
+The Peariscope electronic components can be connected according to the following diagram.  
+
+![Peariscope Circuit](peariscope_circuit.png)
