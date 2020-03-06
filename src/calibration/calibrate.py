@@ -22,7 +22,7 @@ GRID_SQUARE_SIZE = float(parsed.gridsize)
 RESOLUTION = tuple([int(res) for res in parsed.resolution])
 
 # Create video capture
-cap = cv2.VideoCapture(int(parsed.camera))
+cap = cv2.VideoCapture('http://frcvision.local:1181/stream.mjpg')
 
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, RESOLUTION[0])
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, RESOLUTION[1])

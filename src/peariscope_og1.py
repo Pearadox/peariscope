@@ -7,182 +7,7 @@ import json
 import numpy as np
 import cv2
 import networktables
-import math
-from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
 import peariscope.src.multiCameraServer as mcs
-import RPi.GPIO as GPIO
-
-configFile = "/boot/frc.json"
-
-class CameraConfig: pass
-
-team = None
-server = False
-cameraConfigs = []
-switchedCameraConfigs = []
-cameras = []
-insts = []
-
-CAMERA_MATRIX_NAME = 'camera_matrix'
-DISTORTION_COEFFICIENTS_NAME = 'distortion_coefficients'
-
-def parseError(str):
-    """Report parse error."""
-    print("config error in '" + configFile + "': " + str, file=sys.stderr)
-
-def readCameraConfig(config):
-    """Read single camera configuration."""
-    cam = CameraConfig()
-
-    # name
-    try:
-        cam.name = config["name"]
-    except KeyError:
-        parseError("could not read camera name")
-        return False
-
-    # path
-    try:
-        cam.path = config["path"]
-    except KeyError:
-        parseError("camera '{}': could not read path".format(cam.name))
-        return False
-
-    # stream properties
-    cam.streamConfig = config.get("stream")
-
-    cam.config = config
-
-    cameraConfigs.append(cam)
-    return True
-
-def readCalibrationFile(path: str):
-    fs = cv2.FileStorage(path, cv2.FileStorage_READ)
-    if fs.isOpened():
-        cam_mat = fs.getNode(CAMERA_MATRIX_NAME).mat()
-        dist_coeff = fs.getNode(DISTORTION_COEFFICIENTS_NAME).mat()
-        return cam_mat, dist_coeff
-    else:
-        raise ValueError(
-            "Specified calibration file does not exist or cannot be opened"
-        )
-
-def readSwitchedCameraConfig(config):
-    """Read single switched camera configuration."""
-    cam = CameraConfig()
-
-    # name
-    try:
-        cam.name = config["name"]
-    except KeyError:
-        parseError("could not read switched camera name")
-        return False
-
-    # path
-    try:
-        cam.key = config["key"]
-    except KeyError:
-        parseError("switched camera '{}': could not read key".format(cam.name))
-        return False
-
-    switchedCameraConfigs.append(cam)
-    return True
-
-def readConfig():
-    """Read configuration file."""
-    global team
-    global server
-
-    # parse file
-    try:
-        with open(configFile, "rt", encoding="utf-8") as f:
-            j = json.load(f)
-    except OSError as err:
-        print("could not open '{}': {}".format(configFile, err), file=sys.stderr)
-        return False
-
-    # top level must be an object
-    if not isinstance(j, dict):
-        parseError("must be JSON object")
-        return False
-
-    # team number
-    try:
-        team = j["team"]
-    except KeyError:
-        parseError("could not read team number")
-        return False
-
-    # ntmode (optional)
-    if "ntmode" in j:
-        str = j["ntmode"]
-        if str.lower() == "client":
-            server = False
-        elif str.lower() == "server":
-            server = True
-        else:
-            parseError("could not understand ntmode value '{}'".format(str))
-
-    # cameras
-    try:
-        cameras = j["cameras"]
-    except KeyError:
-        parseError("could not read cameras")
-        return False
-    for camera in cameras:
-        if not readCameraConfig(camera):
-            return False
-
-    # switched cameras
-    if "switched cameras" in j:
-        for camera in j["switched cameras"]:
-            if not readSwitchedCameraConfig(camera):
-                return False
-
-    return True
-
-def startCamera(config):
-    """Start running the camera."""
-    print("Starting camera '{}' on {}".format(config.name, config.path))
-    inst = CameraServer.getInstance()
-    camera = UsbCamera(config.name, config.path)
-    server = inst.startAutomaticCapture(camera=camera, return_server=True)
-
-    camera.setConfigJson(json.dumps(config.config))
-    camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
-
-    if config.streamConfig is not None:
-        server.setConfigJson(json.dumps(config.streamConfig))
-
-    return camera, inst
-
-def startSwitchedCamera(config):
-    """Start running the switched camera."""
-    print("Starting switched camera '{}' on {}".format(config.name, config.key))
-    server = CameraServer.getInstance().addSwitchedCamera(config.name)
-
-    def listener(fromobj, key, value, isNew):
-        if isinstance(value, float):
-            i = int(value)
-            if i >= 0 and i < len(cameras):
-              server.setSource(cameras[i])
-        elif isinstance(value, str):
-            for i in range(len(cameraConfigs)):
-                if value == cameraConfigs[i].name:
-                    server.setSource(cameras[i])
-                    break
-
-    networktables.NetworkTablesInstance.getDefault().getEntry(config.key).addListener(
-        listener,
-        ntcore.constants.NT_NOTIFY_IMMEDIATE |
-        ntcore.constants.NT_NOTIFY_NEW |
-        ntcore.constants.NT_NOTIFY_UPDATE)
-
-    return server
-
-#########################
-# Start Peariscope Code #
-#########################
 
 # Define some colors (BGR)
 BGR_BLACK = (0, 0, 0)
@@ -192,7 +17,7 @@ BGR_GREEN = (0, 255, 0)
 BGR_BLUE = (255, 0, 0)
 BGR_YELLOW = (0, 255, 255)
 
-# Define default parameters
+# Define default parameters 
 DEFAULT_VALS = {
     'led_red' : 0,
     'led_grn' : 255,
@@ -204,15 +29,6 @@ DEFAULT_VALS = {
     'min_val' : 40,
     'max_val' : 255,
 }
-
-TARGET_POINTS = np.array(
-    [
-        [[0.498475, 0.0, 0.0]],  # Top right
-        [[0.2492375, -0.4318, 0.0]],  # Bottom right
-        [[-0.2492375, -0.4318, 0.0]],  # Bottom left
-        [[-0.498475, 0.0, 0.0]],  # Top left
-    ]
-)
 
 def ringlight_on(red, grn, blu):
     print("Setting ringlights to", red, grn, blu)
@@ -240,13 +56,7 @@ def peariscope(camera, inst):
     camera_height = config['height']
     camera_width = config['width']
     camera_fps = config['fps']
-    print('camera_height: {}, camera_width: {}, fps: {}'.format(
-        camera_height, camera_width, camera_fps))
-    
-    camera_matrix = np.array([[624.25613979,   0.        , 334.72661579],
-       [  0.        , 620.80019602, 219.02446486],
-       [  0.        ,   0.        ,   1.        ]])
-    distortion_coeffs = np.array([[ 0.19929767, -0.49579213, -0.00794165,  0.00057195, -0.25235623]])
+    print('camera_height: {}, camera_width: {}, fps: {}'.format(camera_height, camera_width, camera_fps))
 
     # Create sink for capturing images from the camera video stream
     sink = inst.getVideo()
@@ -271,20 +81,7 @@ def peariscope(camera, inst):
     red = nt.getNumber('led_red', None)
     grn = nt.getNumber('led_grn', None)
     blu = nt.getNumber('led_blu', None)
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(32, GPIO.OUT)
     ringlight_on(red, grn, blu)
-    p = GPIO.PWM(32, 1000)
-    p.start(0)
-    p.ChangeDutyCycle(80)
-
-    # while True:
-    #     for dc in range(0, 101, 5):
-    #         p.ChangeDutyCycle(dc)
-    #         time.sleep(0.1)
-    #     for dc in range(100, -1, -5):
-    #         p.ChangeDutyCycle(dc)
-    #         time.sleep(0.1)
 
     #
     # Image Loop (runs for each image from the camera)
@@ -295,7 +92,7 @@ def peariscope(camera, inst):
         start_time = current_time
 
         # Publish the temperature of the pi
-        # nt.putNumber('temperature', get_temperature())
+        #nt.putNumber('temperature', get_temperature())
 
         # Get configuration values for LED lights
         led_red = nt.getNumber('led_red', None)
@@ -340,7 +137,7 @@ def peariscope(camera, inst):
 
         # Create an output image for display
         output_img = np.zeros_like(input_img)
-        # output_img[:] = BGR_BLUE
+        #output_img[:] = BGR_BLUE
 
         # Find contours in the binary image
         _, contour_list, _ = cv2.findContours(binary_img, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
@@ -352,20 +149,15 @@ def peariscope(camera, inst):
         # Initialize arrays of results
         x_list = [] # X-coordinates of found reflectors
         y_list = [] # Y-coordinates of found reflectors
-        
-        target_pos_list = []
-        camera_pos_list = []
-        dist_list = []
-        angle_list = []
-
-        
 
         # For each contour of every object...
         for contour in contour_list:
+
             # Compute the area of the contour
             area = cv2.contourArea(contour)
             if area < 10:
                 continue # Immediately eliminate small contours
+
             # Color in the contour so we know it was seen
             cv2.drawContours(output_img, [contour], 0, color=BGR_RED, thickness=-1)
 
@@ -390,43 +182,33 @@ def peariscope(camera, inst):
             # Compute the fill of the contour
             fill = area / (rect_long * rect_short)
 
+            # Checks to make sure the area above the green contour is empty
+            ur = int(rect_y -rect_short/8)
+            lr = int(rect_y + rect_short/8)
+            lc = int(rect_x - rect_long/8)
+            rc = int(rect_x + rect_long/8)
+            inner_zone = binary_img[ur:lr,lc:rc]
+            output_img[ur:lr,lc:rc] = BGR_BLUE
+            if inner_zone.sum() > 0:
+                continue
+
             # Keep only the contours we want
-            corners = cv2.convexHull(contour)
-            corners = cv2.approxPolyDP(corners, 0.015 * cv2.arcLength(contour, True), True)
-            
-            if (150 < area) and (-20 < rect_angle < 20) and (ratio > 1.5) and (fill < 0.25) and len(corners) == 4:
-                cv2.drawContours(output_img, [corners], 0, (255, 0, 255), thickness=15)
+            if (150 < area) and (-20 < rect_angle < 20) and (ratio > 1.5) and (fill < 0.25): # optimized for trench position
+
+                print("area {:.2f} long {:.2f} short {:.2f} angle {:.2f} ratio {:.2f} fill {:.2f}".format(
+                    area, rect_long, rect_short, rect_angle, ratio, fill))
+
                 # Color in the successful contour
                 cv2.drawContours(output_img, [contour], 0, color=BGR_GREEN, thickness=-1)
 
                 # Draw rotated rectangle
-                # cv2.drawContours(output_img, [np.int0(cv2.boxPoints(rect))], 0, BGR_YELLOW, 2)
+                cv2.drawContours(output_img, [np.int0(cv2.boxPoints(rect))], 0, BGR_YELLOW, 2)
 
                 # Draw a circle to mark the center
                 cv2.circle(output_img, center=(int(rect_x), int(rect_y)), radius=3, color=BGR_YELLOW, thickness=-1)
-
                 # Add to the lists of results
                 x_list.append(rect_x)
                 y_list.append(rect_y)
-
-                _, rvec, tvec = cv2.solvePnP(TARGET_POINTS, corners.astype(np.float64), camera_matrix, distortion_coeffs)
-
-                rot, _ = cv2.Rodrigues(rvec)
-                
-                x = tvec[0][0]
-                z = tvec[1][0] * np.sin(math.pi/12) + tvec[2][0] * np.sin(math.pi/12)
-                
-                angle1 = np.arctan2(x, z)
-                rot_t = rot.transpose()
-                pzero_world = np.matmul(rot_t, -tvec)
-                x_from_target = pzero_world[0][0]
-                z_from_target = pzero_world[2][0]
-                angle2 = np.arctan2(pzero_world[0][0], pzero_world[2][0])
-                
-                target_pos_list.append([x, z])
-                camera_pos_list.append([x_from_target, z_from_target])
-                dist_list.append(math.sqrt(x**2 + z**2))   
-                angle_list.append([angle1, angle2])
 
         #
         # Outputs
@@ -445,20 +227,6 @@ def peariscope(camera, inst):
         y_list_pct = [round(y, 1) for y in y_list_pct]
         nt.putNumberArray('x_list_pct', x_list_pct)
         nt.putNumberArray('y_list_pct', y_list_pct)
-        
-        if len(target_pos_list) > 0:
-            target_pos_list = target_pos_list[0]
-            nt.putNumberArray('target_pos_list', target_pos_list)
-        
-        if len(camera_pos_list) > 0:
-            camera_pos_list = camera_pos_list[0]
-            nt.putNumberArray('camera_pos_list', camera_pos_list)
-            
-        if len(angle_list) > 0:
-            angle_list = angle_list[0]
-            nt.putNumberArray('angle_list', angle_list)
-            
-        nt.putNumberArray('dist_list', dist_list)
 
         # Draw crosshairs on the image
         cv2.line(output_img, (img_center_x, 0), (img_center_x, img_height-1), BGR_YELLOW, 1)
@@ -473,10 +241,7 @@ def peariscope(camera, inst):
         fps = 1/elapsed_time
         nt.putNumber('elapsed_time', elapsed_time)
         nt.putNumber('fps', fps)
-
-#######################
-# End Peariscope Code #
-#######################
+        print("fps {:.2f}".format(fps))
 
 if __name__ == "__main__":
     if len(sys.argv) >= 2:
